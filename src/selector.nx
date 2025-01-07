@@ -19,7 +19,7 @@ component DEMUX(width) : [selector, input] -> [output[i] | i in [0..W]] {
     auto input, output[W];
 
     mask <> ENCODER(width) <> selector;
-    output <> [
+    output <> OR(W) <> [
         AND <> [input, CAST <> mask[i]] | i in [0..W]
     ];
 }
