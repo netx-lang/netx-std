@@ -1,0 +1,50 @@
+library selector;
+
+component MUX(width) : [selector] :: [input[i] | i in [0..W]] -> [output] {
+    let W = 2**width;
+    wire selector of bit(width);
+    wire mask     of bit(W);
+    auto input[W], output;
+
+    mask <> DECODER(width) <> selector;
+    output <> OR(W) <> [
+        AND <> [input[i], CAST <> mask[i]] | i in [0..W]
+    ];
+}
+
+component DEMUX(width) : [selector, input] -> [output[i] | i in [0..W]] {
+    let W = 2**width;
+    wire selector of bit(width);
+    wire mask     of bit(W);
+    auto input, output[W];
+
+    mask <> ENCODER(width) <> selector;
+    output <> [
+        AND <> [input, CAST <> mask[i]] | i in [0..W]
+    ];
+}
+
+component DECODER(width) : [input] -> [output] {
+    let W = 2**width;
+    wire input  of bit(width);
+    wire output of bit(W);
+    
+    for (i in [0..W]) {
+        output[i] <> AND(width) <> [port |
+            j in [0..width],
+            let port = if i & (1 << j) then TO else NOT
+        ] <> [input[j] | j in [0..width]];
+    }
+}
+
+component ENCODER(width) : [input] -> [output] {
+    let W = 2**width;
+    wire input  of bit(W);
+    wire output of bit(width);
+    
+    for (i in [0..width]) {
+        output[i] <> OR(width + 1) <> [
+            input[j] | j in [0..W], when j & (1 << i)
+        ];
+    }
+}
