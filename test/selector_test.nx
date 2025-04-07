@@ -3,14 +3,19 @@ application selector_test;
 import selector.*;
 
 component mux_1 : [cond, t, b] -> [out] {
-    wire cond      of bit(1);
-    wire t, b, out of bit(32);
-    out <> MUX(1) <> [cond, t, b];
+  wire cond      of bit(1);
+  wire t, b, out of bit(32);
+  out <> MUX(1) <> [cond, t, b];
 }
 
 component mux_5 : [cond] -> [out] {
-    wire cond      of bit(5);
-    wire out       of bit(32);
-    out <> MUX(5) <> [cond] :: [ i | i in [0..32] ];
+  wire cond      of bit(5);
+  wire out       of bit(32);
+  out <> MUX(5) <> [cond] :: [ i | i in [0..32] ];
 }
 
+component priority_encoder_3 : [input] -> [output] {
+  wire input  of bit(8);
+  wire output of bit(3);
+  output <> PRIORITY_ENCODER(3) <> input;
+}
