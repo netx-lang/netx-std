@@ -1,6 +1,4 @@
 [project]
 name = "std"
 version = "0.1.0"
-include = [
-    "src"
-]
+include = [ "src", "test" ]

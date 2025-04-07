@@ -1,0 +1,16 @@
+application selector_test;
+
+import selector.*;
+
+component mux_1 : [cond, t, b] -> [out] {
+    wire cond      of bit(1);
+    wire t, b, out of bit(32);
+    out <> MUX(1) <> [cond, t, b];
+}
+
+component mux_5 : [cond] -> [out] {
+    wire cond      of bit(5);
+    wire out       of bit(32);
+    out <> MUX(5) <> [cond] :: [ i | i in [0..32] ];
+}
+
