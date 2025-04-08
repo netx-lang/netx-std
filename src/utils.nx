@@ -1,0 +1,18 @@
+library utils;
+
+component REG(isPosEdge, isHighRst, rstValue) : [clk, rst, input] -> [output] {
+  wire clk of clock();
+  wire rst of bit(1);
+  auto input, output;
+  
+  let baseReg = REGISTER(isPosEdge) <> [TO, clk#];
+
+  let neg_rst = NOT <> rst;
+  let rstCond = CAST <> if isHighRst then rst else neg_rst;
+  let inpCond = CAST <> if isHighRst then neg_rst else rst;
+
+  output <> baseReg <> OR <> [
+    AND <> [input, inpCond],
+    AND <> [rstValue, rstCond]
+  ];
+}

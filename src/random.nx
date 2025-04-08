@@ -1,0 +1,14 @@
+library random;
+
+import utils.REG;
+
+component FibLFSR(width, isPosEdge, isHighRst, seed, taps) : [clk, rst] -> [output] {
+  wire output of bit(width);
+  wire clk of clock();
+  wire rst of bit(1);
+
+  let reg(i) = REG(isPosEdge, isHighRst, seed[i]) <> [clk#, rst#, TO];
+  let lfsr(i) = output[i] <> reg(i) 
+    <> if i == 0 then TO else lfsr(i - 1);
+  lfsr(width - 1) <> XOR(4) <> [ output[i - 1] | i in taps ];
+}

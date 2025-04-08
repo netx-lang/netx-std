@@ -1,0 +1,16 @@
+application random_test;
+
+import random.*;
+
+component fib_lfsr_16 : [clk, rst] -> [output] {
+  wire clk of clock();
+  wire rst of bit(1);
+  wire output of bit(16);
+  output <> FibLFSR (
+    width=16, 
+    isPosEdge=true, 
+    isHighRst=true, 
+    seed=16'hA5A5, 
+    taps=[16, 14, 13, 11]
+  ) <> [clk, rst];
+}
