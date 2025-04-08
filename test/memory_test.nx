@@ -1,0 +1,16 @@
+application memory_test;
+
+import memory.*;
+
+component sync_fifo_16: [rst, clk, wr_en, rd_en, din] -> [dout, empty, full] {
+    wire clk of clock();
+    wire din, dout of bit(32);
+    wire rst, wr_en, rd_en, empty, full of bit(1);
+
+    [dout, empty, full] <> SyncFIFO(
+        width=32, 
+        capacity=4, 
+        isPosEdge=true, 
+        isHighRst=true
+    ) <> [clk, rst, wr_en, rd_en, din];
+}

@@ -80,6 +80,12 @@ namespace random_test {
     }
 }
 
+namespace memory {
+    CASE(sync_fifo_16) {
+
+    }
+}
+
 #define TEST(package, component) test(#package "." #component, package::component)
 
 int main() {
