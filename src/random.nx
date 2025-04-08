@@ -8,7 +8,26 @@ component FibLFSR(width, isPosEdge, isHighRst, seed, taps) : [clk, rst] -> [outp
   wire rst of bit(1);
 
   let reg(i) = REG(isPosEdge, isHighRst, seed[i]) <> [clk#, rst#, TO];
-  let lfsr(i) = output[i] <> reg(i) 
-    <> if i == 0 then TO else lfsr(i - 1);
-  lfsr(width - 1) <> XOR(4) <> [ output[i - 1] | i in taps ];
+  let lfsr(i) = output[i] <> reg(i) <> (
+    if i == 0 then XOR <> [ output[i - 1] | i in taps ] 
+    else lfsr(i - 1)
+  );
+  lfsr(width - 1);
+}
+
+component GaloisLFSR(width, isPosEdge, isHighRst, seed, taps) : [clk, rst] -> [output] {
+  wire output of bit(width);
+  wire clk of clock();
+  wire rst of bit(1);
+
+  let feedback = output[width - 1];
+  let inTaps(i) = [j | j in taps, when i == j] != [];
+  let reg(i) = REG(isPosEdge, isHighRst, seed[i]) <> [clk#, rst#, TO];
+
+  let lfsr(i) = output[i] <> reg(i) <> (
+    if i == 0         then feedback 
+    else if inTaps(i) then XOR <> [feedback, lfsr(i - 1)]
+    else lfsr(i - 1)
+  );
+  lfsr(width - 1);
 }

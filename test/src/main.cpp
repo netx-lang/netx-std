@@ -65,6 +65,19 @@ namespace random_test {
         assert(values->size() == 65535);
         delete values;
     }
+
+    CASE(galois_lfsr_16) {
+        circuit.update(1, high);
+        circuit.flip_clocks(); circuit.flip_clocks();
+        const auto values = new std::set<hxon::value_t>();
+        circuit.update(1, low);
+        for (int i = 0; i != 65536; ++i) {
+            values->insert(circuit.get_value(2));
+            circuit.flip_clocks(); circuit.flip_clocks();
+        }
+        assert(values->size() == 65535);
+        delete values;
+    }
 }
 
 #define TEST(package, component) test(#package "." #component, package::component)
@@ -73,5 +86,6 @@ int main() {
     TEST(selector_test, mux_5);
     TEST(selector_test, priority_encoder_3);
     TEST(random_test, fib_lfsr_16);
+    TEST(random_test, galois_lfsr_16);
     return 0;
 }
