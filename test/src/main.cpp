@@ -6,10 +6,12 @@
 #include "circuit/circuit_parser.h"
 
 std::tuple<hxon::circuit, hxon::id_set, hxon::id_set> setup_simulator(const std::string &command) {
-    boost::process::ipstream json;
+    std::string json;
+    boost::process::ipstream out;
     boost::process::child process(command,
-        boost::process::std_out > json,
-        boost::process::std_err > boost::process::null);
+                                  boost::process::std_out > out,
+                                  boost::process::std_err > boost::process::null);
+    std::getline(out, json);
     process.wait();
     auto context = hxon::parse_circuit(nlohmann::json::parse(json));
     return {context.circuit, context.circuit_input, context.circuit_output};
@@ -40,6 +42,14 @@ namespace selector_test {
         for (int i = 0; i != 32; ++i) {
             circuit.update(*inputs.begin(), hxon::value_t::parse(std::format("5'd{}", i)));
             assert(circuit.get_value(*outputs.begin()) == hxon::value_t(32, i));
+        }
+    }
+
+    CASE(decoder_5) {
+        for (int i = 0; i != 32; ++i) {
+            circuit.update(*inputs.begin(), hxon::value_t::parse(std::format("5'd{}", i)));
+            const int expected = 1 << i;
+            assert(circuit.get_value(*outputs.begin()) == hxon::value_t(32, expected));
         }
     }
 
@@ -80,16 +90,51 @@ namespace random_test {
     }
 }
 
-namespace memory {
+namespace memory_test {
     CASE(sync_fifo_16) {
+        auto time_advance = [&] {
+            circuit.flip_clocks();
+            circuit.flip_clocks();
+        };
 
+        circuit.update(0, high); time_advance(); circuit.update(0, low); // reset
+        circuit.update(2, high); // enable write
+        circuit.update(3, low);  // disable read
+        for (int i = 1; i <= 20; ++i) {
+            circuit.update(4, hxon::value_t::parse(std::format("32'd{}", i)));
+            time_advance();
+            if (i >= 15) {
+                assert(circuit.get_value(7) == high); // full
+            }
+        }
+        circuit.update(2, low);  // disable write
+        circuit.update(3, high); // enable read
+        for (int i = 1; i <= 20; ++i) {
+            time_advance();
+            if (i >= 15) {
+                assert(circuit.get_value(6) == high); // empty
+            } else {
+                assert(circuit.get_value(5) == hxon::value_t::parse(std::format("32'd{}", i)));
+            }
+        }
+
+        circuit.update(0, high); time_advance(); circuit.update(0, low); // reset
+        circuit.update(2, high); // enable write
+        circuit.update(3, high); // enable read
+        for (int i = 1; i <= 30; ++i) {
+            circuit.update(4, hxon::value_t::parse(std::format("32'd{}", i)));
+            time_advance();
+            assert(circuit.get_value(5) == hxon::value_t::parse(std::format("32'd{}", i - 1)));
+        }
     }
 }
 
 #define TEST(package, component) test(#package "." #component, package::component)
 
 int main() {
+    TEST(memory_test, sync_fifo_16);
     TEST(selector_test, mux_5);
+    TEST(selector_test, decoder_5);
     TEST(selector_test, priority_encoder_3);
     TEST(random_test, fib_lfsr_16);
     TEST(random_test, galois_lfsr_16);

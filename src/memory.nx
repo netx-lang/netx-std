@@ -17,7 +17,7 @@ component SyncFIFO(width, capacity, isPosEdge, isHighRst) : [clk, rst, wr_en, rd
 
     let reg = REG(isPosEdge, isHighRst, CAST <> 0) <> [clk#, rst#, TO];
     let add_one(x) = ADD <> [x, CAST <> 1];
-    let next_reg(x, cond, next) = x <> reg <> MUX(1) <> [cond, next, x];
+    let next_reg(x, cond, next) = x <> reg <> MUX(1) <> [cond, x, next];
 
     next_reg(wptr, real_wr_en, add_one(wptr));
     next_reg(rptr, real_rd_en, add_one(rptr));

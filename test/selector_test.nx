@@ -14,6 +14,12 @@ component mux_5 : [cond] -> [out] {
   out <> MUX(5) <> [cond] :: [ i | i in [0..32] ];
 }
 
+component decoder_5 : [input] -> [output] {
+  wire input  of bit(5);
+  wire output of bit(32);
+  output <> DECODER(5) <> input;
+}
+
 component priority_encoder_3 : [input] -> [output] {
   wire input  of bit(8);
   wire output of bit(3);
