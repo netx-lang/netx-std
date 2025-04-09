@@ -62,15 +62,18 @@ namespace selector_test {
     }
 }
 
+
 namespace random_test {
     CASE(fib_lfsr_16) {
         circuit.update(1, high);
-        circuit.flip_clocks(); circuit.flip_clocks();
+        circuit.flip(circuit.all_clocks());
+        circuit.flip(circuit.all_clocks());
         const auto values = new std::set<hxon::value_t>();
         circuit.update(1, low);
         for (int i = 0; i != 65536; ++i) {
             values->insert(circuit.get_value(2));
-            circuit.flip_clocks(); circuit.flip_clocks();
+            circuit.flip(circuit.all_clocks());
+            circuit.flip(circuit.all_clocks());
         }
         assert(values->size() == 65535);
         delete values;
@@ -78,12 +81,14 @@ namespace random_test {
 
     CASE(galois_lfsr_16) {
         circuit.update(1, high);
-        circuit.flip_clocks(); circuit.flip_clocks();
+        circuit.flip(circuit.all_clocks());
+        circuit.flip(circuit.all_clocks());
         const auto values = new std::set<hxon::value_t>();
         circuit.update(1, low);
         for (int i = 0; i != 65536; ++i) {
             values->insert(circuit.get_value(2));
-            circuit.flip_clocks(); circuit.flip_clocks();
+            circuit.flip(circuit.all_clocks());
+            circuit.flip(circuit.all_clocks());
         }
         assert(values->size() == 65535);
         delete values;
@@ -93,8 +98,8 @@ namespace random_test {
 namespace memory_test {
     CASE(sync_fifo_16) {
         auto time_advance = [&] {
-            circuit.flip_clocks();
-            circuit.flip_clocks();
+            circuit.flip(circuit.all_clocks());
+            circuit.flip(circuit.all_clocks());
         };
 
         circuit.update(0, high); time_advance(); circuit.update(0, low); // reset
