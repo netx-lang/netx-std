@@ -3,33 +3,56 @@ library memory;
 import utils.REG;
 import selector.*;
 
+component RegFile(width, capacity, isPosEdge, isHighRst) 
+  : [clk, rst, rd_addr_a, rd_addr_b, wr_en, wr_addr, din] -> [dout_a, dout_b] {
+  wire clk of clock();
+  wire rst, wr_en of bit(1);
+  wire rd_addr_a, rd_addr_b, wr_addr of bit(capacity);
+  wire din, dout_a, dout_b of bit(width);
+
+  let W = 2**capacity;
+  wire data[W] of bit(width);
+
+  wire wr_mask of bit(W);
+  wr_mask <> DECODER(capacity) <> wr_addr;
+  for (i in [0..W]) {
+    data[i] <> REG(isPosEdge, isHighRst, CAST <> 0) <> [clk, rst, 
+      MUX(1) <> [
+        AND <> [wr_mask[i], wr_en], data[i], din
+      ]
+    ];
+  }
+  dout_a <> MUX(capacity) <> [rd_addr_a] :: [data[i] | i in [0..W]];
+  dout_b <> MUX(capacity) <> [rd_addr_b] :: [data[i] | i in [0..W]];
+}
+
 component SyncFIFO(width, capacity, isPosEdge, isHighRst) : [clk, rst, wr_en, rd_en, din] -> [dout, empty, full] {
-    wire clk of clock();
-    wire din, dout of bit(width);
-    wire rst, wr_en, rd_en, empty, full of bit(1);
+  wire clk of clock();
+  wire din, dout of bit(width);
+  wire rst, wr_en, rd_en, empty, full of bit(1);
 
-    let W = 2**capacity;
-    wire fifo[W] of bit(width);
-    wire wptr, rptr of bit(capacity);
+  let W = 2**capacity;
+  wire fifo[W] of bit(width);
+  wire wptr, rptr of bit(capacity);
 
-    let real_wr_en = AND <> [wr_en, NOT <> full];
-    let real_rd_en = AND <> [rd_en, NOT <> empty];
+  let real_wr_en = AND <> [wr_en, NOT <> full];
+  let real_rd_en = AND <> [rd_en, NOT <> empty];
 
-    let reg = REG(isPosEdge, isHighRst, CAST <> 0) <> [clk#, rst#, TO];
-    let add_one(x) = ADD <> [x, CAST <> 1];
-    let next_reg(x, cond, next) = x <> reg <> MUX(1) <> [cond, x, next];
+  let reg = REG(isPosEdge, isHighRst, CAST <> 0) <> [clk#, rst#, TO];
+  let add_one(x) = ADD <> [x, CAST <> 1];
+  let next_reg(x, cond, next) = x <> reg <> MUX(1) <> [cond, x, next];
 
-    next_reg(wptr, real_wr_en, add_one(wptr));
-    next_reg(rptr, real_rd_en, add_one(rptr));
+  next_reg(wptr, real_wr_en, add_one(wptr));
+  next_reg(rptr, real_rd_en, add_one(rptr));
 
-    wire w_mask of bit(W);
-    w_mask <> DECODER(capacity) <> wptr;
-    for (i in [0..W]) {
-        next_reg(fifo[i], AND <> [w_mask[i], real_wr_en], din);
-    }
-    
-    next_reg(dout, real_rd_en, MUX(capacity) <> [rptr] :: [fifo[i] | i in [0..W]]);
+  wire w_mask of bit(W);
+  w_mask <> DECODER(capacity) <> wptr;
+  for (i in [0..W]) {
+    next_reg(fifo[i], AND <> [w_mask[i], real_wr_en], din);
+  }
+  
+  next_reg(dout, real_rd_en, MUX(capacity) <> [rptr] :: [fifo[i] | i in [0..W]]);
 
-    full  <> EQ <> [add_one(wptr), rptr];
-    empty <> EQ <> [wptr, rptr];
+  full  <> EQ <> [add_one(wptr), rptr];
+  empty <> EQ <> [wptr, rptr];
 }

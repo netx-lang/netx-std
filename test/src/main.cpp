@@ -96,13 +96,34 @@ namespace random_test {
 }
 
 namespace memory_test {
+    CASE(reg_file_32) {
+        auto time_advance = [&] {
+            circuit.flip(circuit.all_clocks());
+            circuit.flip(circuit.all_clocks());
+        };
+        circuit.update(1, high); time_advance(); circuit.update(1, low); // reset
+        circuit.update(4, high); // enable write
+        for (int i = 0; i != 32; ++i) {
+            circuit.update(5, hxon::value_t::parse(std::format("5'd{}", i))); // wr_addr
+            circuit.update(6, hxon::value_t::parse(std::format("32'd{}", i))); // din
+            time_advance();
+        }
+        circuit.update(4, low); // disable write
+        for (int i = 0; i != 32; ++i) {
+            circuit.update(2, hxon::value_t::parse(std::format("5'd{}", i)));
+            circuit.update(3, hxon::value_t::parse(std::format("32'd{}", 32 - i - 1)));
+            assert (circuit.get_value(7) == hxon::value_t::parse(std::format("32'd{}", i)));
+            assert (circuit.get_value(8) == hxon::value_t::parse(std::format("32'd{}", 32 - i - 1)));
+        }
+    }
+
     CASE(sync_fifo_16) {
         auto time_advance = [&] {
             circuit.flip(circuit.all_clocks());
             circuit.flip(circuit.all_clocks());
         };
 
-        circuit.update(0, high); time_advance(); circuit.update(0, low); // reset
+        circuit.update(1, high); time_advance(); circuit.update(1, low); // reset
         circuit.update(2, high); // enable write
         circuit.update(3, low);  // disable read
         for (int i = 1; i <= 20; ++i) {
@@ -123,7 +144,7 @@ namespace memory_test {
             }
         }
 
-        circuit.update(0, high); time_advance(); circuit.update(0, low); // reset
+        circuit.update(1, high); time_advance(); circuit.update(1, low); // reset
         circuit.update(2, high); // enable write
         circuit.update(3, high); // enable read
         for (int i = 1; i <= 30; ++i) {
@@ -137,11 +158,12 @@ namespace memory_test {
 #define TEST(package, component) test(#package "." #component, package::component)
 
 int main() {
-    TEST(memory_test, sync_fifo_16);
     TEST(selector_test, mux_5);
     TEST(selector_test, decoder_5);
     TEST(selector_test, priority_encoder_3);
     TEST(random_test, fib_lfsr_16);
     TEST(random_test, galois_lfsr_16);
+    TEST(memory_test, reg_file_32);
+    TEST(memory_test, sync_fifo_16);
     return 0;
 }
