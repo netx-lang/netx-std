@@ -1,9 +1,9 @@
 library utils;
 
-component REG(isPosEdge, isHighRst, rstValue) : [clk, rst, input] -> [output] {
+component REG(isPosEdge, isHighRst) : [clk, rst, rst_in, input] -> [output] {
   wire clk of clock();
   wire rst of bit(1);
-  auto input, output;
+  auto input, rst_in, output;
   
   let baseReg = REGISTER(isPosEdge) <> [TO, clk#];
 
@@ -13,6 +13,6 @@ component REG(isPosEdge, isHighRst, rstValue) : [clk, rst, input] -> [output] {
 
   output <> baseReg <> OR <> [
     AND <> [input, inpCond],
-    AND <> [rstValue, rstCond]
+    AND <> [rst_in, rstCond]
   ];
 }

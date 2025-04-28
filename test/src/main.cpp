@@ -171,6 +171,23 @@ namespace memory_test {
     }
 }
 
+namespace arith_test {
+    CASE(sqrt32_test) {
+        circuit.update(1, high);
+        time_advance(circuit);
+        circuit.update(1, low);
+
+        for (unsigned int i = 0; i != 65536; ++i) {
+            circuit.update(2, hxon::value_t::parse(std::format("32'd{}", i * i)));
+            circuit.update(1, high); time_advance(circuit); circuit.update(1, low);
+            for (int j = 0; j != 16; ++j) {
+                time_advance(circuit);
+            }
+            assert (circuit.get_value(3) == hxon::value_t::parse(std::format("16'd{}", i)));
+        }
+    }
+}
+
 #define TEST(package, component) test(#package "." #component, package::component)
 
 int main() {
@@ -182,5 +199,6 @@ int main() {
     TEST(memory_test, shift_reg_32);
     TEST(memory_test, reg_file_32);
     TEST(memory_test, sync_fifo_16);
+    TEST(arith_test, sqrt32_test);
     return 0;
 }

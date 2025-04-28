@@ -10,8 +10,8 @@ component ShiftReg(width, isPosEdge, isHighRst)
   wire rst_in, dout of bit(width);
 
   let reg(i) = dout[i] <> 
-    REG(isPosEdge, isHighRst, rst_in[i]) <> [
-      clk, rst, if i == 0 then din else reg(i - 1)
+    REG(isPosEdge, isHighRst) <> [
+      clk, rst, rst_in[i], if i == 0 then din else reg(i - 1)
     ];  
   reg(width - 1);
 }
@@ -29,7 +29,7 @@ component RegFile(width, capacity, isPosEdge, isHighRst)
   wire wr_mask of bit(W);
   wr_mask <> DECODER(capacity) <> wr_addr;
   for (i in [0..W]) {
-    data[i] <> REG(isPosEdge, isHighRst, CAST <> 0) <> [clk, rst, 
+    data[i] <> REG(isPosEdge, isHighRst) <> [clk, rst, CAST <> 0,
       MUX(1) <> [
         AND <> [wr_mask[i], wr_en], data[i], din
       ]
@@ -52,7 +52,7 @@ component SyncFIFO(width, capacity, isPosEdge, isHighRst)
   let real_wr_en = AND <> [wr_en, NOT <> full];
   let real_rd_en = AND <> [rd_en, NOT <> empty];
 
-  let reg = REG(isPosEdge, isHighRst, CAST <> 0) <> [clk#, rst#, TO];
+  let reg = REG(isPosEdge, isHighRst) <> [clk#, rst#, CAST <> 0, TO];
   let add_one(x) = ADD <> [x, CAST <> 1];
   let next_reg(x, cond, next) = x <> reg <> MUX(1) <> [cond, x, next];
 
