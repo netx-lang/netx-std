@@ -18,10 +18,10 @@ component DEMUX(width) : [selector, input] -> [output[i] | i in [0..W]] {
   wire mask     of bit(W);
   auto input, output[W];
 
-  mask <> ENCODER(width) <> selector;
-  output <> OR(W) <> [
-    AND <> [input, CAST <> mask[i]] | i in [0..W]
-  ];
+  mask <> DECODER(width) <> selector;
+  for (i in [0..W]) {
+    output[i] <> AND <> [input, CAST <> mask[i]];
+  }
 }
 
 component DECODER(width) : [input] -> [output] {
@@ -62,4 +62,4 @@ component PRIORITY_ENCODER(width) : [input] -> [output] {
       mask[i] <> AND(W - i) <> input[i] :: [NOT <> input[j] | j in [i + 1..W]];
   }
   output <> ENCODER(width) <> mask;
-}
+} 

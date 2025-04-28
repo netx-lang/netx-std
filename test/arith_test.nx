@@ -2,13 +2,6 @@ application arith_test;
 
 import arith.*;
 
-component temp : [a, b, c] -> [d] {
-  wire a, b of bit(4);
-  wire c of bit(1);
-  wire d of bit(6);
-  d <> CONCAT <> [a, b[3], c];
-}
-
 component sqrt32_test : [clk, rst, D] -> [Q] {
   wire clk of clock();
   wire rst of bit(1);
