@@ -1,4 +1,5 @@
 #include <format>
+#include <random>
 #include <fstream>
 #include <iostream>
 
@@ -32,10 +33,16 @@ decltype(auto) test(const std::string &name, Func &&stimuli) {
     std::cout << name << std::endl;
 }
 
-#define CASE(component) void component(hxon::circuit circuit, [[maybe_unused]] const hxon::id_set &inputs, [[maybe_unused]] const hxon::id_set &outputs)
+#define CASE(component) void component(hxon::circuit &circuit, [[maybe_unused]] const hxon::id_set &inputs, [[maybe_unused]] const hxon::id_set &outputs)
 
 static auto high = hxon::value_t(1, 1);
 static auto low = hxon::value_t(1, 0);
+
+static void time_advance(hxon::circuit &circuit) {
+    circuit.flip(circuit.all_clocks());
+    circuit.flip(circuit.all_clocks());
+}
+
 
 namespace selector_test {
     CASE(mux_5) {
@@ -96,17 +103,31 @@ namespace random_test {
 }
 
 namespace memory_test {
+    CASE(shift_reg_32) {
+        int value = 0x12345678;
+        std::random_device rd;
+
+        circuit.update(1, high);
+        circuit.update(2, hxon::value_t::parse(std::format("32'd{}", value)));
+        time_advance(circuit);
+        assert (circuit.get_value(4) == hxon::value_t::parse(std::format("32'd{}", value)));
+        circuit.update(1, low);
+        for (int i = 0; i != 128; ++i) {
+            const bool isHigh = std::uniform_int_distribution(0, 1)(rd);
+            circuit.update(3, isHigh ? high : low);
+            value = value << 1 | isHigh;
+            time_advance(circuit);
+            assert (circuit.get_value(4) == hxon::value_t::parse(std::format("32'd{}", value)));
+        }
+    }
+
     CASE(reg_file_32) {
-        auto time_advance = [&] {
-            circuit.flip(circuit.all_clocks());
-            circuit.flip(circuit.all_clocks());
-        };
-        circuit.update(1, high); time_advance(); circuit.update(1, low); // reset
+        circuit.update(1, high); time_advance(circuit); circuit.update(1, low); // reset
         circuit.update(4, high); // enable write
         for (int i = 0; i != 32; ++i) {
             circuit.update(5, hxon::value_t::parse(std::format("5'd{}", i))); // wr_addr
             circuit.update(6, hxon::value_t::parse(std::format("32'd{}", i))); // din
-            time_advance();
+            time_advance(circuit);
         }
         circuit.update(4, low); // disable write
         for (int i = 0; i != 32; ++i) {
@@ -118,17 +139,12 @@ namespace memory_test {
     }
 
     CASE(sync_fifo_16) {
-        auto time_advance = [&] {
-            circuit.flip(circuit.all_clocks());
-            circuit.flip(circuit.all_clocks());
-        };
-
-        circuit.update(1, high); time_advance(); circuit.update(1, low); // reset
+        circuit.update(1, high); time_advance(circuit); circuit.update(1, low); // reset
         circuit.update(2, high); // enable write
         circuit.update(3, low);  // disable read
         for (int i = 1; i <= 20; ++i) {
             circuit.update(4, hxon::value_t::parse(std::format("32'd{}", i)));
-            time_advance();
+            time_advance(circuit);
             if (i >= 15) {
                 assert(circuit.get_value(7) == high); // full
             }
@@ -136,7 +152,7 @@ namespace memory_test {
         circuit.update(2, low);  // disable write
         circuit.update(3, high); // enable read
         for (int i = 1; i <= 20; ++i) {
-            time_advance();
+            time_advance(circuit);
             if (i >= 15) {
                 assert(circuit.get_value(6) == high); // empty
             } else {
@@ -144,12 +160,12 @@ namespace memory_test {
             }
         }
 
-        circuit.update(1, high); time_advance(); circuit.update(1, low); // reset
+        circuit.update(1, high); time_advance(circuit); circuit.update(1, low); // reset
         circuit.update(2, high); // enable write
         circuit.update(3, high); // enable read
         for (int i = 1; i <= 30; ++i) {
             circuit.update(4, hxon::value_t::parse(std::format("32'd{}", i)));
-            time_advance();
+            time_advance(circuit);
             assert(circuit.get_value(5) == hxon::value_t::parse(std::format("32'd{}", i - 1)));
         }
     }
@@ -163,6 +179,7 @@ int main() {
     TEST(selector_test, priority_encoder_3);
     TEST(random_test, fib_lfsr_16);
     TEST(random_test, galois_lfsr_16);
+    TEST(memory_test, shift_reg_32);
     TEST(memory_test, reg_file_32);
     TEST(memory_test, sync_fifo_16);
     return 0;

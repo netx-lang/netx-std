@@ -2,6 +2,18 @@ application memory_test;
 
 import memory.*;
 
+component shift_reg_32 : [clk, rst, rst_in, din] -> [dout] {
+    wire clk of clock();
+    wire rst, din of bit(1);
+    wire rst_in, dout of bit(32);
+
+    dout <> ShiftReg(
+        width=32, 
+        isPosEdge=true, 
+        isHighRst=true
+    ) <> [clk, rst, rst_in, din];
+}
+
 component reg_file_32 : [clk, rst, rd_addr_a, rd_addr_b, wr_en, wr_addr, din] -> [dout_a, dout_b] {
     wire clk of clock();
     wire rst, wr_en of bit(1);

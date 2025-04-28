@@ -3,6 +3,19 @@ library memory;
 import utils.REG;
 import selector.*;
 
+component ShiftReg(width, isPosEdge, isHighRst) 
+  : [clk, rst, rst_in, din] -> [dout] {
+  wire clk of clock();
+  wire rst, din of bit(1);
+  wire rst_in, dout of bit(width);
+
+  let reg(i) = dout[i] <> 
+    REG(isPosEdge, isHighRst, rst_in[i]) <> [
+      clk, rst, if i == 0 then din else reg(i - 1)
+    ];  
+  reg(width - 1);
+}
+
 component RegFile(width, capacity, isPosEdge, isHighRst) 
   : [clk, rst, rd_addr_a, rd_addr_b, wr_en, wr_addr, din] -> [dout_a, dout_b] {
   wire clk of clock();
@@ -26,7 +39,8 @@ component RegFile(width, capacity, isPosEdge, isHighRst)
   dout_b <> MUX(capacity) <> [rd_addr_b] :: [data[i] | i in [0..W]];
 }
 
-component SyncFIFO(width, capacity, isPosEdge, isHighRst) : [clk, rst, wr_en, rd_en, din] -> [dout, empty, full] {
+component SyncFIFO(width, capacity, isPosEdge, isHighRst) 
+  : [clk, rst, wr_en, rd_en, din] -> [dout, empty, full] {
   wire clk of clock();
   wire din, dout of bit(width);
   wire rst, wr_en, rd_en, empty, full of bit(1);
