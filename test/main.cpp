@@ -4,9 +4,9 @@
 #include <iostream>
 
 #include <boost/process.hpp>
-#include "circuit/circuit_parser.h"
+#include <nxsim/circuit_parser.h>
 
-hxon::parse_context setup_simulator(const std::string &command) {
+nxon::parse_context setup_simulator(const std::string &command) {
     std::string json;
     boost::process::ipstream out;
     boost::process::child process(command,
@@ -14,7 +14,7 @@ hxon::parse_context setup_simulator(const std::string &command) {
                                   boost::process::std_err > boost::process::null);
     std::getline(out, json);
     process.wait();
-    return hxon::parse_circuit(nlohmann::json::parse(json));
+    return nxon::parse_circuit(nlohmann::json::parse(json));
 }
 
 template <typename Func>
@@ -32,9 +32,9 @@ decltype(auto) test(const std::string &name, Func &&stimuli) {
     std::cout << name << std::endl;
 }
 
-#define CASE(component) void component(hxon::parse_context ctx)
+#define CASE(component) void component(nxon::parse_context ctx)
 
-using namespace hxon;
+using namespace nxon;
 static auto high = value_t(1, 1);
 static auto low = value_t(1, 0);
 
