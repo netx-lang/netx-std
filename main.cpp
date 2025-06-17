@@ -20,7 +20,7 @@ nxon::parse_context setup_simulator(const std::string &command) {
 template <typename Func>
 decltype(auto) test(const std::string &name, Func &&stimuli) {
     const auto command = std::format(
-        "nx compile /home/nairen/workspace/netx_std/_netx.toml --minimal --top {}", name);
+        "nx compile _netx.toml --minimal --top {}", name);
     auto ctx = setup_simulator(command);
 
     using namespace std::chrono;

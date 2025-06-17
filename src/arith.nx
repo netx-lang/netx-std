@@ -10,18 +10,18 @@ component sqrt32(isPosEdge, isHighRst) : [clk, rst, D] -> [Q] {
   wire D of bit(32);
   wire Q of bit(16);
 
-  auto D_odd <> ShiftReg(16, isPosEdge, isHighRst) <> [clk, rst, 
+  let shift = ShiftReg(16, isPosEdge, isHighRst) <> [clk#, rst#, TO, TO];
+  auto D_odd <> shift <> [
     CONCAT <> [D[i * 2 + 1] | i in [16..0]], 1'b0
   ];
-
-  auto D_eve <> ShiftReg(16, isPosEdge, isHighRst) <> [clk, rst, 
+  auto D_eve <> shift <> [
     CONCAT <> [D[i * 2] | i in [16..0]], 1'b0
   ];
 
   wire R, R_next, lhs, rhs of bit(18);
   lhs <> CONCAT <> [R[15:0], D_odd[15], D_eve[15]];
   rhs <> CONCAT <> [Q, R[17], 1'b1];
-  Q <> ShiftReg(16, isPosEdge, isHighRst) <> [clk, rst, 16'd0, NOT <> R_next[17]];
+  Q <> shift <> [ 16'd0, NOT <> R_next[17]];
   R_next <> MUX(1) <> [
     R[17],
     SUB <> [lhs, rhs],
