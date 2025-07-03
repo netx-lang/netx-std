@@ -2,16 +2,17 @@ application memory_test;
 
 import memory.*;
 
-component shift_reg_32 : [clk, rst, rst_in, din] -> [dout] {
+component shift_reg_32 : [clk, rst, rst_value, din] -> [dout] {
     wire clk of clock();
     wire rst, din of bit(1);
-    wire rst_in, dout of bit(32);
+    wire rst_value, dout of bit(32);
 
-    dout <> ShiftReg(
+    dout <> SHIFT_REG (
         width=32, 
-        isPosEdge=true, 
-        isHighRst=true
-    ) <> [clk, rst, rst_in, din];
+        pos_edge=true, 
+        high_rst=true,
+        rst_value=rst_value
+    ) <> [clk, rst, din];
 }
 
 component reg_file_32 : [clk, rst, rd_addr_a, rd_addr_b, wr_en, wr_addr, din] -> [dout_a, dout_b] {
@@ -20,11 +21,11 @@ component reg_file_32 : [clk, rst, rd_addr_a, rd_addr_b, wr_en, wr_addr, din] ->
     wire rd_addr_a, rd_addr_b, wr_addr of bit(5);
     wire din, dout_a, dout_b of bit(32);
 
-    [dout_a, dout_b] <> RegFile(
+    [dout_a, dout_b] <> REG_FILE(
         width=32, 
         capacity=5, 
-        isPosEdge=true, 
-        isHighRst=true
+        pos_edge=true, 
+        high_rst=true
     ) <> [clk, rst, rd_addr_a, rd_addr_b, wr_en, wr_addr, din];
 }
 
@@ -33,10 +34,10 @@ component sync_fifo_16: [clk, rst, wr_en, rd_en, din] -> [dout, empty, full] {
     wire din, dout of bit(32);
     wire rst, wr_en, rd_en, empty, full of bit(1);
 
-    [dout, empty, full] <> SyncFIFO(
+    [dout, empty, full] <> SYNC_FIFO(
         width=32, 
         capacity=4, 
-        isPosEdge=true, 
-        isHighRst=true
+        pos_edge=true, 
+        high_rst=true
     ) <> [clk, rst, wr_en, rd_en, din];
 }

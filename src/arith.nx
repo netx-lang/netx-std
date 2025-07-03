@@ -2,32 +2,29 @@ library arith;
 
 import utils.REG;
 import selector.*;
-import memory.ShiftReg;
+import memory.SHIFT_REG;
 
-component sqrt32(isPosEdge, isHighRst) : [clk, rst, D] -> [Q] {
+component SQRT32(pos_edge, high_rst) : [clk, rst, D] -> [Q] {
   wire clk of clock();
   wire rst of bit(1);
   wire D of bit(32);
   wire Q of bit(16);
 
-  let shift = ShiftReg(16, isPosEdge, isHighRst) <> [clk#, rst#, TO, TO];
-  auto D_odd <> shift <> [
-    CONCAT <> [D[i * 2 + 1] | i in [16..0]], 1'b0
-  ];
-  auto D_eve <> shift <> [
-    CONCAT <> [D[i * 2] | i in [16..0]], 1'b0
-  ];
-
   wire R, R_next, lhs, rhs of bit(18);
+  let shift(init_value) = SHIFT_REG(16, pos_edge, high_rst, init_value) <> [clk#, rst#, TO];
+  
+  auto D_odd <> shift(CONCAT <> [D[i * 2 + 1] | i in [16..0]]) <> 1'b0;
+  auto D_eve <> shift(CONCAT <> [D[i * 2]     | i in [16..0]]) <> 1'b0;
+  Q <> shift(16'd0) <> NOT <> R_next[17];
+
   lhs <> CONCAT <> [R[15:0], D_odd[15], D_eve[15]];
   rhs <> CONCAT <> [Q, R[17], 1'b1];
-  Q <> shift <> [ 16'd0, NOT <> R_next[17]];
   R_next <> MUX(1) <> [
     R[17],
     SUB <> [lhs, rhs],
     ADD <> [lhs, rhs]
   ];
-  R <> REG(isPosEdge, isHighRst) <> [
-    clk, rst, 18'd0, R_next
+  R <> REG(pos_edge, high_rst, 18'd0) <> [
+    clk, rst, R_next
   ];
 }

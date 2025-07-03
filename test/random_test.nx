@@ -6,11 +6,11 @@ component fib_lfsr_16 : [clk, rst] -> [output] {
   wire clk of clock();
   wire rst of bit(1);
   wire output of bit(16);
-  output <> FibLFSR (
+  output <> FIB_LFSR (
     width=16, 
-    isPosEdge=true, 
-    isHighRst=true, 
-    seed=16'hA5A5, 
+    pos_edge=true, 
+    high_rst=true, 
+    seed=16'hFFFF, 
     taps=[16, 14, 13, 11]
   ) <> [clk, rst];
 }
@@ -19,10 +19,10 @@ component galois_lfsr_16 : [clk, rst] -> [output] {
   wire clk of clock();
   wire rst of bit(1);
   wire output of bit(16);
-  output <> GaloisLFSR (
+  output <> GALOIS_LFSR (
     width=16, 
-    isPosEdge=true, 
-    isHighRst=true, 
+    pos_edge=true, 
+    high_rst=true, 
     seed=16'hA5A5, 
     taps=[2, 3, 5]
   ) <> [clk, rst];

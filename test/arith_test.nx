@@ -7,5 +7,5 @@ component sqrt32_test : [clk, rst, D] -> [Q] {
   wire rst of bit(1);
   wire D of bit(32);
   wire Q of bit(16);
-  Q <> sqrt32(isPosEdge=true, isHighRst=true) <> [clk, rst, D];
+  Q <> SQRT32(pos_edge=true, high_rst=true) <> [clk, rst, D];
 }

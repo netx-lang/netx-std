@@ -126,7 +126,7 @@ namespace memory_test {
         std::random_device rd;
 
         ctx.update_by_name("rst", high);
-        ctx.update_by_name("rst_in", {32, value});
+        ctx.update_by_name("rst_value", {32, value});
         time_advance(ctx);
         assert (ctx.get_by_name("dout") == value_t(32, value));
         ctx.update_by_name("rst", low);

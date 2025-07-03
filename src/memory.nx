@@ -3,20 +3,20 @@ library memory;
 import utils.REG;
 import selector.*;
 
-component ShiftReg(width, isPosEdge, isHighRst) 
-  : [clk, rst, rst_in, din] -> [dout] {
+component SHIFT_REG(width, pos_edge, high_rst, rst_value) 
+  : [clk, rst, din] -> [dout] {
   wire clk of clock();
   wire rst, din of bit(1);
-  wire rst_in, dout of bit(width);
+  wire casted, dout of bit(width);
+  casted <> CAST <> rst_value;
 
-  let reg(i) = dout[i] <> 
-    REG(isPosEdge, isHighRst) <> [
-      clk, rst, rst_in[i], if i == 0 then din else reg(i - 1)
-    ];  
+  let reg(i) = dout[i] <> REG(pos_edge, high_rst, casted[i]) <> [
+    clk, rst, if i == 0 then din else reg(i - 1)
+  ];
   reg(width - 1);
 }
 
-component RegFile(width, capacity, isPosEdge, isHighRst) 
+component REG_FILE(width, capacity, pos_edge, high_rst) 
   : [clk, rst, rd_addr_a, rd_addr_b, wr_en, wr_addr, din] -> [dout_a, dout_b] {
   wire clk of clock();
   wire rst, wr_en of bit(1);
@@ -29,7 +29,7 @@ component RegFile(width, capacity, isPosEdge, isHighRst)
   wire wr_mask of bit(W);
   wr_mask <> DECODER(capacity) <> wr_addr;
   for (i in [0..W]) {
-    data[i] <> REG(isPosEdge, isHighRst) <> [clk, rst, CAST <> 0,
+    data[i] <> REG(pos_edge, high_rst, 0) <> [clk, rst,
       MUX(1) <> [
         AND <> [wr_mask[i], wr_en], data[i], din
       ]
@@ -39,7 +39,7 @@ component RegFile(width, capacity, isPosEdge, isHighRst)
   dout_b <> MUX(capacity) <> [rd_addr_b] :: [data[i] | i in [0..W]];
 }
 
-component SyncFIFO(width, capacity, isPosEdge, isHighRst) 
+component SYNC_FIFO(width, capacity, pos_edge, high_rst) 
   : [clk, rst, wr_en, rd_en, din] -> [dout, empty, full] {
   wire clk of clock();
   wire din, dout of bit(width);
@@ -52,7 +52,7 @@ component SyncFIFO(width, capacity, isPosEdge, isHighRst)
   let real_wr_en = AND <> [wr_en, NOT <> full];
   let real_rd_en = AND <> [rd_en, NOT <> empty];
 
-  let reg = REG(isPosEdge, isHighRst) <> [clk#, rst#, CAST <> 0, TO];
+  let reg = REG(pos_edge, high_rst, 0) <> [clk#, rst#, TO];
   let add_one(x) = ADD <> [x, CAST <> 1];
   let next_reg(x, cond, next) = x <> reg <> MUX(1) <> [cond, x, next];
 

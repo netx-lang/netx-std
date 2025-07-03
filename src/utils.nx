@@ -1,18 +1,17 @@
 library utils;
 
-component REG(isPosEdge, isHighRst) : [clk, rst, rst_in, input] -> [output] {
+import selector.MUX;
+
+component REG(pos_edge, high_rst, rst_value) : [clk, rst, input] -> [output] {
   wire clk of clock();
   wire rst of bit(1);
-  auto input, rst_in, output;
-  
-  let baseReg = REGISTER(isPosEdge) <> [TO, clk#];
+  auto input, output;
 
-  let neg_rst = NOT <> rst;
-  let rstCond = CAST <> if isHighRst then rst else neg_rst;
-  let inpCond = CAST <> if isHighRst then neg_rst else rst;
-
-  output <> baseReg <> OR <> [
-    AND <> [input, inpCond],
-    AND <> [rst_in, rstCond]
-  ];
+  let casted = CAST <> rst_value;
+  let reg = REGISTER(pos_edge) <> [TO, clk#];  
+  output <> reg <> MUX(1) <> (
+    if high_rst
+    then [rst, input, casted]
+    else [rst, casted, input]
+  );
 }
