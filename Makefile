@@ -23,7 +23,7 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 $(TARGET): main.cpp | $(BUILD_DIR)
-	c++ $(CXXFLAGS) -o $@ $< -lnxsim
+	c++ $(CXXFLAGS) -flto -o $@ $< -lnxsim
 
 run: all
 	$(TARGET)
