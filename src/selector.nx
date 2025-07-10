@@ -32,7 +32,7 @@ component DECODER(width) : [input] -> [output] {
   for (i in [0..W]) {
     output[i] <> AND(width) <> [port |
       j in [0..width],
-      let port = if i & (1 << j) then TO else NOT
+      let port = if (i >> j) & 1 then TO else NOT
     ] <> [input[j] | j in [0..width]];
   }
 }
@@ -44,7 +44,7 @@ component ENCODER(width) : [input] -> [output] {
   
   for (i in [0..width]) {
     output[i] <> OR(2**(width-1)) <> [
-      input[j] | j in [0..W], when j & (1 << i)
+      input[j] | j in [0..W], when (j >> i) & 1
     ];
   }
 }
