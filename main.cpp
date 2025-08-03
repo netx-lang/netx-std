@@ -2,19 +2,58 @@
 #include <random>
 #include <fstream>
 #include <iostream>
+#include <thread>
+#include <stdexcept>
 
-#include <boost/process.hpp>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
 #include <nxsim/circuit_parser.h>
 
 nxon::parse_context setup_simulator(const std::string &command) {
-    std::string json;
-    boost::process::ipstream out;
-    boost::process::child process(command,
-                                  boost::process::std_out > out,
-                                  boost::process::std_err > boost::process::null);
-    std::getline(out, json);
-    process.wait();
-    return nxon::parse_circuit(nlohmann::json::parse(json));
+    int pipefd[2];
+    if (pipe(pipefd) == -1) {
+        throw std::runtime_error("pipe() failed");
+    }
+    
+    pid_t pid = fork();
+    if (pid == 0) {
+        close(pipefd[0]);
+        dup2(pipefd[1], STDOUT_FILENO);
+        dup2(open("/dev/null", O_WRONLY), STDERR_FILENO);
+        close(pipefd[1]);
+        
+        execl("/bin/sh", "sh", "-c", command.c_str(), nullptr);
+        _exit(1);
+    } else if (pid > 0) {
+        close(pipefd[1]);
+        
+        std::string json;
+        char buffer[4096];
+        ssize_t bytes;
+        
+        while ((bytes = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
+            json.append(buffer, bytes);
+        }
+        
+        close(pipefd[0]);
+        int status;
+        waitpid(pid, &status, 0);
+        
+        if (WEXITSTATUS(status) != 0) {
+            throw std::runtime_error("NetX compilation failed");
+        }
+        
+        if (!json.empty() && json.back() == '\n') {
+            json.pop_back();
+        }
+        
+        return nxon::parse_circuit(nlohmann::json::parse(json));
+    } else {
+        close(pipefd[0]);
+        close(pipefd[1]);
+        throw std::runtime_error("fork() failed");
+    }
 }
 
 template <typename Func>

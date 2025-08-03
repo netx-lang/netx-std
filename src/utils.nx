@@ -1,7 +1,29 @@
+/**
+  * NetX Standard Library
+  * 
+  * This library provides utility components for use in NetX designs.
+  * 
+  * @file utils.nx
+  */
 library utils;
 
 import selector.MUX;
 
+
+/**
+  * Register component
+  *
+  * This component implements a register with synchronous reset.
+  *
+  * @attr pos_edge   Triggers on rising edge of clock when true
+  * @attr high_rst   Enables active-high reset when true
+  * @attr rst_value  Value to load on reset
+  *
+  * @port clk        Clock signal
+  * @port rst        Reset signal
+  * @port input      Input data to be registered
+  * @port output     Output data from the register
+  */
 component REG(pos_edge, high_rst, rst_value) : [clk, rst, input] -> [output] {
   wire clk of clock();
   wire rst of bit(1);
@@ -16,6 +38,14 @@ component REG(pos_edge, high_rst, rst_value) : [clk, rst, input] -> [output] {
   );
 }
 
+/**
+  * Hexadecimal to 7-segment display decoder
+  *
+  * This component converts a 4-bit hexadecimal number to a 7-segment display code.
+  *
+  * @port num        Input hexadecimal number (4 bits)
+  * @port code       Output 7-segment display code (7 bits)
+  */
 component HEX_TO_7SEG: [num] -> [code] {
   wire num  of bit(4);
   wire code of bit(7);

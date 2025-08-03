@@ -1,5 +1,25 @@
+/**
+  * NetX Standard Library - Selector and Logic Components
+  * 
+  * This library provides multiplexing, demultiplexing, encoding, and decoding components
+  * for use in NetX designs.
+  * 
+  * @file selector.nx
+  */
 library selector;
 
+/**
+  * Multiplexer
+  *
+  * This component implements a 2^width-to-1 multiplexer that selects one of multiple
+  * input signals based on the selector value.
+  *
+  * @attr width      Number of selector bits (supports 2^width inputs)
+  *
+  * @port selector   Selection control signal
+  * @port input      Array of input signals to select from
+  * @port output     Selected output signal
+  */
 component MUX(width) : [selector] :: [input[i] | i in [0..W]] -> [output] {
   let W = 2**width;
   wire selector of bit(width);
@@ -12,6 +32,18 @@ component MUX(width) : [selector] :: [input[i] | i in [0..W]] -> [output] {
   ];
 }
 
+/**
+  * Demultiplexer
+  *
+  * This component implements a 1-to-2^width demultiplexer that routes a single
+  * input signal to one of multiple outputs based on the selector value.
+  *
+  * @attr width      Number of selector bits (supports 2^width outputs)
+  *
+  * @port selector   Selection control signal
+  * @port input      Input signal to be routed
+  * @port output     Array of output signals
+  */
 component DEMUX(width) : [selector, input] -> [output[i] | i in [0..W]] {
   let W = 2**width;
   wire selector of bit(width);
@@ -24,6 +56,17 @@ component DEMUX(width) : [selector, input] -> [output[i] | i in [0..W]] {
   }
 }
 
+/**
+  * Binary Decoder
+  *
+  * This component implements a width-to-2^width binary decoder that converts
+  * a binary input to a one-hot output representation.
+  *
+  * @attr width      Number of input bits (produces 2^width outputs)
+  *
+  * @port input      Binary input value
+  * @port output     One-hot decoded output (2^width bits)
+  */
 component DECODER(width) : [input] -> [output] {
   let W = 2**width;
   wire input  of bit(width);
@@ -37,6 +80,17 @@ component DECODER(width) : [input] -> [output] {
   }
 }
 
+/**
+  * Binary Encoder
+  *
+  * This component implements a 2^width-to-width binary encoder that converts
+  * a one-hot input representation to a binary output value.
+  *
+  * @attr width      Number of output bits (accepts 2^width inputs)
+  *
+  * @port input      One-hot input value (2^width bits)
+  * @port output     Binary encoded output
+  */
 component ENCODER(width) : [input] -> [output] {
   let W = 2**width;
   wire input  of bit(W);
@@ -49,6 +103,17 @@ component ENCODER(width) : [input] -> [output] {
   }
 }
 
+/**
+  * Priority Encoder
+  *
+  * This component implements a 2^width-to-width priority encoder that finds
+  * the highest priority (highest index) active input and encodes its position.
+  *
+  * @attr width      Number of output bits (accepts 2^width inputs)
+  *
+  * @port input      Priority input signals (2^width bits)
+  * @port output     Binary encoded position of highest priority active input
+  */
 component PRIORITY_ENCODER(width) : [input] -> [output] {
   let W = 2**width;
   wire input  of bit(W);

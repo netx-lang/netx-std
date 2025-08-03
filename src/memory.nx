@@ -1,8 +1,31 @@
+/**
+  * NetX Standard Library - Memory Components
+  * 
+  * This library provides memory storage and manipulation components for use in NetX designs.
+  * 
+  * @file memory.nx
+  */
 library memory;
 
 import utils.REG;
 import selector.*;
 
+/**
+  * Shift Register
+  *
+  * This component implements a shift register with configurable width and reset value.
+  * Data shifts from LSB to MSB on each clock cycle.
+  *
+  * @attr width      Width of the shift register in bits
+  * @attr pos_edge   Triggers on rising edge of clock when true
+  * @attr high_rst   Enables active-high reset when true
+  * @attr rst_value  Value to load on reset
+  *
+  * @port clk        Clock signal
+  * @port rst        Reset signal
+  * @port din        Serial data input
+  * @port dout       Parallel data output
+  */
 component SHIFT_REG(width, pos_edge, high_rst, rst_value) 
   : [clk, rst, din] -> [dout] {
   wire clk of clock();
@@ -16,6 +39,27 @@ component SHIFT_REG(width, pos_edge, high_rst, rst_value)
   reg(width - 1);
 }
 
+/**
+  * Register File
+  *
+  * This component implements a register file with dual read ports and single write port.
+  * Provides simultaneous read access to two different addresses.
+  *
+  * @attr width      Width of each register in bits
+  * @attr capacity   Number of address bits (2^capacity registers total)
+  * @attr pos_edge   Triggers on rising edge of clock when true
+  * @attr high_rst   Enables active-high reset when true
+  *
+  * @port clk        Clock signal
+  * @port rst        Reset signal
+  * @port rd_addr_a  Read address for port A
+  * @port rd_addr_b  Read address for port B
+  * @port wr_en      Write enable signal
+  * @port wr_addr    Write address
+  * @port din        Data input for write operations
+  * @port dout_a     Data output from port A
+  * @port dout_b     Data output from port B
+  */
 component REG_FILE(width, capacity, pos_edge, high_rst) 
   : [clk, rst, rd_addr_a, rd_addr_b, wr_en, wr_addr, din] -> [dout_a, dout_b] {
   wire clk of clock();
@@ -39,6 +83,26 @@ component REG_FILE(width, capacity, pos_edge, high_rst)
   dout_b <> MUX(capacity) <> [rd_addr_b] :: [data[i] | i in [0..W]];
 }
 
+/**
+  * Synchronous FIFO
+  *
+  * This component implements a synchronous First-In-First-Out buffer with
+  * configurable width and depth. Provides status signals for empty and full conditions.
+  *
+  * @attr width      Width of data words in bits
+  * @attr capacity   Number of address bits (2^capacity words total)
+  * @attr pos_edge   Triggers on rising edge of clock when true
+  * @attr high_rst   Enables active-high reset when true
+  *
+  * @port clk        Clock signal
+  * @port rst        Reset signal
+  * @port wr_en      Write enable signal
+  * @port rd_en      Read enable signal
+  * @port din        Data input for write operations
+  * @port dout       Data output for read operations
+  * @port empty      Empty status flag (1 when FIFO is empty)
+  * @port full       Full status flag (1 when FIFO is full)
+  */
 component SYNC_FIFO(width, capacity, pos_edge, high_rst) 
   : [clk, rst, wr_en, rd_en, din] -> [dout, empty, full] {
   wire clk of clock();

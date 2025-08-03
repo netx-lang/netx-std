@@ -1,9 +1,30 @@
+/**
+  * NetX Standard Library - Arithmetic Components
+  * 
+  * This library provides arithmetic computation components for use in NetX designs.
+  * 
+  * @file arith.nx
+  */
 library arith;
 
 import utils.REG;
 import selector.*;
 import memory.SHIFT_REG;
 
+/**
+  * 32-bit Square Root Calculator
+  *
+  * This component calculates the square root of a 32-bit input using
+  * a non-restoring square root algorithm with shift registers.
+  *
+  * @attr pos_edge    Triggers on rising edge of clock when true
+  * @attr high_rst    Enables active-high reset when true
+  *
+  * @port clk         Clock signal
+  * @port rst         Reset signal
+  * @port D           32-bit input value to compute square root of
+  * @port Q           16-bit output square root result
+  */
 component SQRT32(pos_edge, high_rst) : [clk, rst, D] -> [Q] {
   wire clk of clock();
   wire rst of bit(1);

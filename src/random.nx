@@ -1,7 +1,30 @@
+/**
+  * NetX Standard Library - Random Number Generation
+  * 
+  * This library provides pseudo-random number generation components for use in NetX designs.
+  * 
+  * @file random.nx
+  */
 library random;
 
 import utils.REG;
 
+/**
+  * Fibonacci Linear Feedback Shift Register
+  *
+  * This component implements a Fibonacci LFSR for pseudo-random number generation.
+  * The feedback is computed by XORing specified tap positions and fed to the LSB.
+  *
+  * @attr width      Width of the LFSR in bits
+  * @attr pos_edge   Triggers on rising edge of clock when true
+  * @attr high_rst   Enables active-high reset when true
+  * @attr seed       Initial seed value for the LFSR
+  * @attr taps       Array of tap positions for feedback computation
+  *
+  * @port clk        Clock signal
+  * @port rst        Reset signal
+  * @port output     Pseudo-random output sequence
+  */
 component FIB_LFSR(width, pos_edge, high_rst, seed, taps) : [clk, rst] -> [output] {
   wire output of bit(width);
   wire clk of clock();
@@ -15,6 +38,22 @@ component FIB_LFSR(width, pos_edge, high_rst, seed, taps) : [clk, rst] -> [outpu
   lfsr(width - 1);
 }
 
+/**
+  * Galois Linear Feedback Shift Register
+  *
+  * This component implements a Galois LFSR for pseudo-random number generation.
+  * The feedback from the MSB is XORed with intermediate tap positions.
+  *
+  * @attr width      Width of the LFSR in bits
+  * @attr pos_edge   Triggers on rising edge of clock when true
+  * @attr high_rst   Enables active-high reset when true
+  * @attr seed       Initial seed value for the LFSR
+  * @attr taps       Array of tap positions for feedback computation
+  *
+  * @port clk        Clock signal
+  * @port rst        Reset signal
+  * @port output     Pseudo-random output sequence
+  */
 component GALOIS_LFSR(width, pos_edge, high_rst, seed, taps) : [clk, rst] -> [output] {
   wire output of bit(width);
   wire clk of clock();
