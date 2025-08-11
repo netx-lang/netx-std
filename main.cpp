@@ -232,7 +232,41 @@ namespace memory_test {
 }
 
 namespace arith_test {
+    CASE(barrel_shifter_32_test) {
+        std::cout << "Start barrel_shifter_32_test" << std::endl;
+        unsigned value = 0x12345678;
+        std::random_device rd;
+
+        for (int i = 0; i != 32768; ++i) {
+            bool dir   = std::uniform_int_distribution<unsigned>(0, 1)(rd);
+            bool arith = std::uniform_int_distribution<unsigned>(0, 1)(rd);
+            unsigned shamt = std::uniform_int_distribution<unsigned>(0, 32)(rd);
+            unsigned input = std::uniform_int_distribution<unsigned>(0, 0xFFFFFFFF)(rd);
+
+            ctx.update_by_name("din", {32, input});
+            ctx.update_by_name("shamt", {5, shamt});
+            ctx.update_by_name("dir", {1, dir});
+            ctx.update_by_name("arith", {1, arith});
+            
+            unsigned expected;
+            if (dir) {
+                if (arith) {
+                    expected = ((signed) input) >> shamt;
+                } else {
+                    expected = input >> shamt;
+                }
+            } else {
+                expected = (input << shamt);
+            }
+            assert (ctx.get_by_name("dout") == value_t(32, expected));
+
+            if ((i + 1) % 8192 == 0) {
+                std::cout << "Testing iteration " << i + 1 << " finished" << std::endl;
+            }
+        }
+    }
     CASE(sqrt32_test) {
+        std::cout << "Start sqrt32_test" << std::endl;
         for (unsigned i = 0; i != 65536; ++i) {
             ctx.update_by_name("D", {32, i * i});
             ctx.update_by_name("rst", high); time_advance(ctx);
@@ -241,6 +275,9 @@ namespace arith_test {
                 time_advance(ctx);
             }
             assert (ctx.get_by_name("Q") == value_t(16, i));
+            if ((i + 1) % 8192 == 0) {
+                std::cout << "Testing iteration " << i + 1 << " finished" << std::endl;
+            }
         }
     }
 }
@@ -259,6 +296,7 @@ int main() {
     TEST(memory_test, shift_reg_32);
     TEST(memory_test, reg_file_32);
     TEST(memory_test, sync_fifo_16);
+    TEST(arith_test, barrel_shifter_32_test);
     TEST(arith_test, sqrt32_test);
     return 0;
 }

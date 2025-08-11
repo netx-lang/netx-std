@@ -49,3 +49,43 @@ component SQRT32(pos_edge, high_rst) : [clk, rst, D] -> [Q] {
     clk, rst, R_next
   ];
 }
+
+/**
+  * 32-bit Barrel Shifter
+  *
+  * This component performs barrel shifting on a 32-bit input value.
+  *
+  * @attr stage     Number of stages (log2(width))
+  *
+  * @port din       Input data
+  * @port shamt     Shift amount
+  * @port dir       Shift direction (0 = left, 1 = right)
+  * @port arith     Arithmetic shift flag
+  * @port dout      Output data
+  */
+component BARREL_SHIFTER(stage) : [din, shamt, dir, arith] -> [dout] {
+  let width = 2 ** stage;
+
+  wire din, dout  of bit(width);
+  wire shamt      of bit(stage);
+  wire dir, arith of bit(1);
+
+  auto sign_bit <> MUX(1) <> [arith, 1'b0, din[width - 1]];
+
+  wire result[stage]  of bit(width);
+  for (i in [0..stage]) {
+      for (j in [0..width]) {
+          let offset = 2 ** i;
+
+          let last = (if i == 0 then din else result[i - 1]);
+          let next_left  = if j >= offset        then last[j - offset] else 1'b0;
+          let next_right = if j + offset < width then last[j + offset] else sign_bit;
+          result[i][j] <> MUX(2) <> [
+              CONCAT <> [dir, shamt[i]],
+              last[j], next_left,
+              last[j], next_right
+          ];
+      }
+  }
+  dout <> result[stage - 1];
+}

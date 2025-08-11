@@ -9,3 +9,10 @@ component sqrt32_test : [clk, rst, D] -> [Q] {
   wire Q of bit(16);
   Q <> SQRT32(pos_edge=true, high_rst=true) <> [clk, rst, D];
 }
+
+component barrel_shifter_32_test : [din, shamt, dir, arith] -> [dout] {
+  wire din, dout  of bit(32);
+  wire shamt      of bit(5);
+  wire dir, arith of bit(1);
+  dout <> BARREL_SHIFTER(stage=5) <> [din, shamt, dir, arith];
+}
