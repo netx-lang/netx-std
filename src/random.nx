@@ -60,12 +60,11 @@ component GALOIS_LFSR(width, pos_edge, high_rst, seed, taps) : [clk, rst] -> [ou
   wire rst of bit(1);
 
   let feedback = output[width - 1];
-  let in_taps(i) = [j | j in taps, when i == j] != [];
   let reg(i) = REG(pos_edge, high_rst, seed[i]) <> [clk#, rst#, TO];
 
   let lfsr(i) = output[i] <> reg(i) <> (
     if i == 0         then feedback 
-    else if in_taps(i) then XOR <> [feedback, lfsr(i - 1)]
+    else if $contains(taps, i) then XOR <> [feedback, lfsr(i - 1)]
     else lfsr(i - 1)
   );
   lfsr(width - 1);
