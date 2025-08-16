@@ -20,15 +20,15 @@ library selector;
   * @port input      Array of input signals to select from
   * @port output     Selected output signal
   */
-component MUX(width) : [selector] :: [input[i] | i in [0..W]] -> [output] {
+component MUX(width) : [sel] :: [case[i] | i in [0..W]] -> [output] {
   let W = 2**width;
-  wire selector of bit(width);
-  wire mask     of bit(W);
-  auto input[W], output;
+  wire sel  of bit(width);
+  wire mask of bit(W);
+  auto case[W], output;
 
-  mask <> DECODER(width) <> selector;
+  mask <> DECODER(width) <> sel;
   output <> OR(W) <> [
-    AND <> [input[i], CAST <> mask[i]] | i in [0..W]
+    AND <> [case[i], CAST <> mask[i]] | i in [0..W]
   ];
 }
 
@@ -44,13 +44,13 @@ component MUX(width) : [selector] :: [input[i] | i in [0..W]] -> [output] {
   * @port input      Input signal to be routed
   * @port output     Array of output signals
   */
-component DEMUX(width) : [selector, input] -> [output[i] | i in [0..W]] {
+component DEMUX(width) : [sel, input] -> [output[i] | i in [0..W]] {
   let W = 2**width;
-  wire selector of bit(width);
-  wire mask     of bit(W);
+  wire sel  of bit(width);
+  wire mask of bit(W);
   auto input, output[W];
 
-  mask <> DECODER(width) <> selector;
+  mask <> DECODER(width) <> sel;
   for (i in [0..W]) {
     output[i] <> AND <> [input, CAST <> mask[i]];
   }

@@ -99,6 +99,15 @@ namespace selector_test {
         }
     }
 
+    CASE(mux_enum) {
+        ctx.update_by_name("cond", {2, 0});
+        assert(ctx.get_by_name("out") == value_t(2, 1));
+        ctx.update_by_name("cond", {2, 1});
+        assert(ctx.get_by_name("out") == value_t(2, 2));
+        ctx.update_by_name("cond", {2, 2});
+        assert(ctx.get_by_name("out") == value_t(2, 0));
+    }
+
     CASE(demux_5) {
         ctx.update_by_name("input", {32, 114514});
         for (unsigned i = 0; i != 32; ++i) {
@@ -287,6 +296,7 @@ namespace arith_test {
 int main() {
     TEST(selector_test, mux_1);
     TEST(selector_test, mux_5);
+    TEST(selector_test, mux_enum);
     TEST(selector_test, demux_5);
     TEST(selector_test, decoder_5);
     TEST(selector_test, encoder_5);

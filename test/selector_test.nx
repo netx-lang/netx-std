@@ -8,6 +8,21 @@ component mux_1 : [cond, t, b] -> [out] {
   out <> MUX(1) <> [cond, b, t];
 }
 
+enum COLOR {
+  RED, GREEN, YELLOW
+}
+
+component mux_enum : [cond] -> [out] {
+  wire cond, out of COLOR;
+  out <> MUX(2) <> {
+    sel : cond,
+    case[RED]    : GREEN,
+    case[GREEN]  : YELLOW,
+    case[YELLOW] : RED,
+    $default     : 2'b11
+  };
+}
+
 component mux_5 : [cond] -> [out] {
   wire cond      of bit(5);
   wire out       of bit(32);
