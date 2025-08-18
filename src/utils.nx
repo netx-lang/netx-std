@@ -30,7 +30,7 @@ component REG(pos_edge, high_rst, rst_value) : [clk, rst, input] -> [output] {
   auto input, output;
 
   let casted = CAST <> rst_value;
-  let reg = REGISTER(pos_edge) <> [TO, clk#];  
+  let reg = REGISTER(pos_edge) <> [clk#, TO];  
   output <> reg <> MUX(1) <> (
     if high_rst
     then [rst, input, casted]
