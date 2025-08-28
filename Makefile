@@ -4,9 +4,9 @@ TARGET := $(BUILD_DIR)/std_test
 MODE ?= release
 
 ifeq ($(MODE),debug)
-    CXXFLAGS := -g -O0 -std=c++23 -stdlib=libc++
+    CXXFLAGS := -g -O0 -std=c++23
 else
-    CXXFLAGS := -O3 -ffast-math -std=c++23 -stdlib=libc++
+    CXXFLAGS := -O3 -ffast-math -std=c++23
 endif
 
 .PHONY: all run clean debug release
@@ -23,8 +23,7 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 $(TARGET): main.cpp | $(BUILD_DIR)
-	c++ $(CXXFLAGS) -flto -o $@ $< -lnxsim
-
+	c++ $(CXXFLAGS) -flto -o $@ $<
 run: all
 	$(TARGET)
 
