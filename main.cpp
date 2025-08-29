@@ -8,8 +8,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <fcntl.h>
-#include <nxsim/multiprecision/arithmetic_backend.h>
-#define SIZED_MPINT_BACKEND boost::multiprecision::uint64_based_int
+#define SIZED_MPINT_BACKEND uint64_t
 #include <nxsim/circuit/circuit_parser.h>
 
 nxon::parse_context setup_simulator(const std::string &command) {
