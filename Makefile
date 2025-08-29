@@ -23,7 +23,7 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 $(TARGET): main.cpp | $(BUILD_DIR)
-	c++ $(CXXFLAGS) -flto -o $@ $<
+	c++ $(CXXFLAGS) -o $@ $<
 run: all
 	$(TARGET)
 

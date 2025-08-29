@@ -8,8 +8,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <fcntl.h>
-#define SIZED_MPINT_BACKEND uint64_t
-#include <nxsim/circuit/circuit_parser.h>
+#define NX_BACKEND uint64_t
+#include <nxsim/simulation.h>
 
 nxon::parse_context setup_simulator(const std::string &command) {
     int pipefd[2];
@@ -49,7 +49,7 @@ nxon::parse_context setup_simulator(const std::string &command) {
             json.pop_back();
         }
         
-        return nxon::parse_circuit(nlohmann::json::parse(json));
+        return nxon::parse_circuit(json);
     } else {
         close(pipefd[0]);
         close(pipefd[1]);
@@ -243,7 +243,6 @@ namespace memory_test {
 
 namespace arith_test {
     CASE(barrel_shifter_32_test) {
-        std::cout << "Start barrel_shifter_32_test" << std::endl;
         unsigned value = 0x12345678;
         std::random_device rd;
 
@@ -269,14 +268,9 @@ namespace arith_test {
                 expected = (input << shamt);
             }
             assert (ctx.get_by_name("dout") == value_t(32, expected));
-
-            if ((i + 1) % 8192 == 0) {
-                std::cout << "Testing iteration " << i + 1 << " finished" << std::endl;
-            }
         }
     }
     CASE(sqrt32_test) {
-        std::cout << "Start sqrt32_test" << std::endl;
         for (unsigned i = 0; i != 65536; ++i) {
             ctx.update_by_name("D", {32, i * i});
             ctx.update_by_name("rst", high); time_advance(ctx);
@@ -285,9 +279,6 @@ namespace arith_test {
                 time_advance(ctx);
             }
             assert (ctx.get_by_name("Q") == value_t(16, i));
-            if ((i + 1) % 8192 == 0) {
-                std::cout << "Testing iteration " << i + 1 << " finished" << std::endl;
-            }
         }
     }
 }
