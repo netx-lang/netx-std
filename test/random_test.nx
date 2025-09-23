@@ -2,7 +2,7 @@ application random_test;
 
 import random.*;
 
-component fib_lfsr_16 : [clk, rst] -> [output] {
+component fib_lfsr_16_test : [clk, rst] -> [output] {
   wire clk of clock();
   wire rst of bit(1);
   wire output of bit(16);
@@ -15,7 +15,7 @@ component fib_lfsr_16 : [clk, rst] -> [output] {
   ) <> [clk, rst];
 }
 
-component galois_lfsr_16 : [clk, rst] -> [output] {
+component galois_lfsr_16_test : [clk, rst] -> [output] {
   wire clk of clock();
   wire rst of bit(1);
   wire output of bit(16);

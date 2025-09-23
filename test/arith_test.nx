@@ -16,3 +16,15 @@ component barrel_shifter_32_test : [din, shamt, dir, arith] -> [dout] {
   wire dir, arith of bit(1);
   dout <> BARREL_SHIFTER(stage=5) <> [din, shamt, dir, arith];
 }
+
+component ripple_carry_adder_32_test : [A, B, cin] -> [S, cout] {
+  wire A, B, S   of bit(32);
+  wire cin, cout of bit(1);
+  [S, cout] <> RIPPLE_CARRY_ADDER(32) <> [A, B, cin];
+}
+
+component carry_lookahead_adder_32_test : [A, B, cin] -> [S, cout] {
+  wire A, B, S   of bit(32);
+  wire cin, cout of bit(1);
+  [S, cout] <> CARRY_LOOKAHEAD_ADDER(32) <> [A, B, cin];
+}

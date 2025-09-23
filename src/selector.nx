@@ -128,3 +128,28 @@ component PRIORITY_ENCODER(width) : [input] -> [output] {
   }
   output <> ENCODER(width) <> mask;
 } 
+
+/**
+  * Arbiter
+  *
+  * This component implements a simple arbiter that grants access to one of multiple
+  * requesters based on priority (lower index has higher priority).
+  *
+  * @attr width      Number of requesters
+  *
+  * @port request    Array of request signals
+  * @port grant      Array of grant signals
+  */
+component ARBITER(width) : [request] -> [grant] {
+  wire request of bit(width);
+  wire grant   of bit(width);
+
+  let pre_req(i) = 
+    if i == 0 then request[0]
+    else OR <> [request[i], pre_req(i - 1)];
+
+  grant[0] <> request[0];
+  for (i in [1..width]) {
+      grant[i] <> AND <> [request[i], NOT <> pre_req(i - 1)];
+  }
+}

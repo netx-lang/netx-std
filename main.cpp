@@ -84,7 +84,7 @@ static void time_advance(parse_context &ctx, const std::string &name = "clk") {
 }
 
 namespace selector_test {
-    CASE(mux_1) {
+    CASE(mux_1_test) {
         ctx.update_by_name("t", {32, 114});
         ctx.update_by_name("b", {32, 514});
         ctx.update_by_name("cond", high);
@@ -93,14 +93,14 @@ namespace selector_test {
         assert(ctx.get_by_name("out") == value_t(32, 514));
     }
 
-    CASE(mux_5) {
+    CASE(mux_5_test) {
         for (unsigned i = 0; i != 32; ++i) {
             ctx.update_by_name("cond", {5, i});
             assert(ctx.get_by_name("out") == value_t(32, i));
         }
     }
 
-    CASE(mux_enum) {
+    CASE(mux_enum_test) {
         ctx.update_by_name("cond", {2, 0});
         assert(ctx.get_by_name("out") == value_t(2, 1));
         ctx.update_by_name("cond", {2, 1});
@@ -109,7 +109,7 @@ namespace selector_test {
         assert(ctx.get_by_name("out") == value_t(2, 0));
     }
 
-    CASE(demux_5) {
+    CASE(demux_5_test) {
         ctx.update_by_name("input", {32, 114514});
         for (unsigned i = 0; i != 32; ++i) {
             ctx.update_by_name("cond", {5, i});
@@ -117,32 +117,40 @@ namespace selector_test {
         }
     }
 
-    CASE(decoder_5) {
+    CASE(decoder_5_test) {
         for (unsigned i = 0; i != 32; ++i) {
             ctx.update_by_name("input", {5, i});
             assert(ctx.get_by_name("output") == value_t(32, 1 << i));
         }
     }
 
-    CASE(encoder_5) {
+    CASE(encoder_5_test) {
         for (unsigned i = 0; i != 32; ++i) {
             ctx.update_by_name("input", value_t(32, 1 << i));
             assert(ctx.get_by_name("output") == value_t(5, i));
         }
     }
 
-    CASE(priority_encoder_3) {
+    CASE(priority_encoder_3_test) {
         for (unsigned i = 1; i != 256; ++i) {
             ctx.update_by_name("input", {8, i});
             const auto bit = 8 - (__builtin_clz(i) - 24 + 1);
             assert(ctx.get_by_name("output") == value_t(3, bit));
         }
     }
+
+    CASE(arbiter_4_test) {
+        for (unsigned i = 0; i != 16; ++i) {
+            ctx.update_by_name("request", {4, i});
+            // const auto bit = i == 0 ? 0 : __builtin_ctz(i);
+            assert(ctx.get_by_name("grant") == value_t(4, i & ~(i - 1)));
+        }
+    }
 }
 
 
 namespace random_test {
-    CASE(fib_lfsr_16) {
+    CASE(fib_lfsr_16_test) {
         ctx.update_by_name("rst", high);
         time_advance(ctx);
         const auto values = new std::set<value_t>();
@@ -155,7 +163,7 @@ namespace random_test {
         delete values;
     }
 
-    CASE(galois_lfsr_16) {
+    CASE(galois_lfsr_16_test) {
         ctx.update_by_name("rst", high);
         time_advance(ctx);
         const auto values = new std::set<value_t>();
@@ -170,7 +178,7 @@ namespace random_test {
 }
 
 namespace memory_test {
-    CASE(shift_reg_32) {
+    CASE(shift_reg_32_test) {
         unsigned value = 0x12345678;
         std::random_device rd;
 
@@ -188,7 +196,7 @@ namespace memory_test {
         }
     }
 
-    CASE(reg_file_32) {
+    CASE(reg_file_32_test) {
         ctx.update_by_name("rst", high); time_advance(ctx);
         ctx.update_by_name("rst", low);
         ctx.update_by_name("wr_en", high);
@@ -206,7 +214,7 @@ namespace memory_test {
         }
     }
 
-    CASE(sync_fifo_16) {
+    CASE(sync_fifo_16_test) {
         ctx.update_by_name("rst", high); time_advance(ctx);
         ctx.update_by_name("rst", low);
         ctx.update_by_name("wr_en", high);
@@ -270,6 +278,7 @@ namespace arith_test {
             assert (ctx.get_by_name("dout") == value_t(32, expected));
         }
     }
+
     CASE(sqrt32_test) {
         for (unsigned i = 0; i != 65536; ++i) {
             ctx.update_by_name("D", {32, i * i});
@@ -281,24 +290,55 @@ namespace arith_test {
             assert (ctx.get_by_name("Q") == value_t(16, i));
         }
     }
+
+    CASE(ripple_carry_adder_32_test) {
+        std::random_device rd;
+        for (unsigned i = 0; i != 65536; ++i) {
+            uint64_t a = std::uniform_int_distribution<uint64_t>(0, 0xFFFFFFFF)(rd);
+            uint64_t b = std::uniform_int_distribution<uint64_t>(0, 0xFFFFFFFF)(rd);
+
+            ctx.update_by_name("A", {32, a});
+            ctx.update_by_name("B", {32, b});
+            ctx.update_by_name("cin", low);
+            assert (ctx.get_by_name("S") == value_t(32, a + b));
+            assert (ctx.get_by_name("cout") == value_t(1, (a + b) >> 32));
+        }
+    }
+
+    CASE(carry_lookahead_adder_32_test) {
+        std::random_device rd;
+        for (unsigned i = 0; i != 65536; ++i) {
+            uint64_t a = std::uniform_int_distribution<uint64_t>(0, 0xFFFFFFFF)(rd);
+            uint64_t b = std::uniform_int_distribution<uint64_t>(0, 0xFFFFFFFF)(rd);
+
+            ctx.update_by_name("A", {32, a});
+            ctx.update_by_name("B", {32, b});
+            ctx.update_by_name("cin", low);
+            assert (ctx.get_by_name("S") == value_t(32, a + b));
+            assert (ctx.get_by_name("cout") == value_t(1, (a + b) >> 32));
+        }
+    }
 }
 
 #define TEST(package, component) test(#package "." #component, package::component)
 
 int main() {
-    TEST(selector_test, mux_1);
-    TEST(selector_test, mux_5);
-    TEST(selector_test, mux_enum);
-    TEST(selector_test, demux_5);
-    TEST(selector_test, decoder_5);
-    TEST(selector_test, encoder_5);
-    TEST(selector_test, priority_encoder_3);
-    TEST(random_test, fib_lfsr_16);
-    TEST(random_test, galois_lfsr_16);
-    TEST(memory_test, shift_reg_32);
-    TEST(memory_test, reg_file_32);
-    TEST(memory_test, sync_fifo_16);
+    TEST(selector_test, mux_1_test);
+    TEST(selector_test, mux_5_test);
+    TEST(selector_test, mux_enum_test);
+    TEST(selector_test, demux_5_test);
+    TEST(selector_test, decoder_5_test);
+    TEST(selector_test, encoder_5_test);
+    TEST(selector_test, priority_encoder_3_test);
+    TEST(selector_test, arbiter_4_test);
+    TEST(random_test, fib_lfsr_16_test);
+    TEST(random_test, galois_lfsr_16_test);
+    TEST(memory_test, shift_reg_32_test);
+    TEST(memory_test, reg_file_32_test);
+    TEST(memory_test, sync_fifo_16_test);
     TEST(arith_test, barrel_shifter_32_test);
     TEST(arith_test, sqrt32_test);
+    TEST(arith_test, ripple_carry_adder_32_test);
+    TEST(arith_test, carry_lookahead_adder_32_test);
     return 0;
 }

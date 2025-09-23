@@ -2,7 +2,7 @@ application memory_test;
 
 import memory.*;
 
-component shift_reg_32 : [clk, rst, rst_value, din] -> [dout] {
+component shift_reg_32_test: [clk, rst, rst_value, din] -> [dout] {
     wire clk of clock();
     wire rst, din of bit(1);
     wire rst_value, dout of bit(32);
@@ -15,7 +15,7 @@ component shift_reg_32 : [clk, rst, rst_value, din] -> [dout] {
     ) <> [clk, rst, din];
 }
 
-component reg_file_32 : [clk, rst, rd_addr_a, rd_addr_b, wr_en, wr_addr, din] -> [dout_a, dout_b] {
+component reg_file_32_test: [clk, rst, rd_addr_a, rd_addr_b, wr_en, wr_addr, din] -> [dout_a, dout_b] {
     wire clk of clock();
     wire rst, wr_en of bit(1);
     wire rd_addr_a, rd_addr_b, wr_addr of bit(5);
@@ -29,7 +29,7 @@ component reg_file_32 : [clk, rst, rd_addr_a, rd_addr_b, wr_en, wr_addr, din] ->
     ) <> [clk, rst, rd_addr_a, rd_addr_b, wr_en, wr_addr, din];
 }
 
-component sync_fifo_16: [clk, rst, wr_en, rd_en, din] -> [dout, empty, full] {
+component sync_fifo_16_test: [clk, rst, wr_en, rd_en, din] -> [dout, empty, full] {
     wire clk of clock();
     wire din, dout of bit(32);
     wire rst, wr_en, rd_en, empty, full of bit(1);

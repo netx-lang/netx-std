@@ -2,7 +2,7 @@ application selector_test;
 
 import selector.*;
 
-component mux_1 : [cond, t, b] -> [out] {
+component mux_1_test : [cond, t, b] -> [out] {
   wire cond      of bit(1);
   wire t, b, out of bit(32);
   out <> MUX(1) <> [cond, b, t];
@@ -12,7 +12,7 @@ enum COLOR {
   RED, GREEN, YELLOW
 }
 
-component mux_enum : [cond] -> [out] {
+component mux_enum_test : [cond] -> [out] {
   wire cond, out of COLOR;
   out <> MUX(2) <> {
     sel : cond,
@@ -23,33 +23,39 @@ component mux_enum : [cond] -> [out] {
   };
 }
 
-component mux_5 : [cond] -> [out] {
+component mux_5_test : [cond] -> [out] {
   wire cond      of bit(5);
   wire out       of bit(32);
   out <> MUX(5) <> [cond] :: [ i | i in [0..32] ];
 }
 
-component demux_5 : [cond, input] -> [out] {
+component demux_5_test : [cond, input] -> [out] {
   wire cond      of bit(5);
   wire input     of bit(32);
   wire out[32]   of bit(32);
   [out[i] | i in [0..32]] <> DEMUX(5) <> [cond, input];
 }
 
-component decoder_5 : [input] -> [output] {
+component decoder_5_test : [input] -> [output] {
   wire input  of bit(5);
   wire output of bit(32);
   output <> DECODER(5) <> input;
 }
 
-component encoder_5 : [input] -> [output] {
+component encoder_5_test : [input] -> [output] {
   wire input  of bit(32);
   wire output of bit(5);
   output <> ENCODER(5) <> input;
 }
 
-component priority_encoder_3 : [input] -> [output] {
+component priority_encoder_3_test : [input] -> [output] {
   wire input  of bit(8);
   wire output of bit(3);
   output <> PRIORITY_ENCODER(3) <> input;
+}
+
+component arbiter_4_test : [request] -> [grant] {
+  wire request of bit(4);
+  wire grant   of bit(4);
+  grant <> ARBITER(4) <> request;
 }
