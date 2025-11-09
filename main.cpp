@@ -79,71 +79,71 @@ static auto high = value_t(1, 1);
 static auto low = value_t(1, 0);
 
 static void time_advance(parse_context &ctx, const std::string &name = "clk") {
-    ctx.flip_by_name(name);
-    ctx.flip_by_name(name);
+    ctx.flip(name);
+    ctx.flip(name);
 }
 
 namespace selector_test {
     CASE(mux_1_test) {
-        ctx.update_by_name("t", {32, 114});
-        ctx.update_by_name("b", {32, 514});
-        ctx.update_by_name("cond", high);
-        assert(ctx.get_by_name("out") == value_t(32, 114));
-        ctx.update_by_name("cond", low);
-        assert(ctx.get_by_name("out") == value_t(32, 514));
+        ctx.set("t", {32, 114});
+        ctx.set("b", {32, 514});
+        ctx.set("cond", high);
+        assert(ctx.get("out") == value_t(32, 114));
+        ctx.set("cond", low);
+        assert(ctx.get("out") == value_t(32, 514));
     }
 
     CASE(mux_5_test) {
         for (unsigned i = 0; i != 32; ++i) {
-            ctx.update_by_name("cond", {5, i});
-            assert(ctx.get_by_name("out") == value_t(32, i));
+            ctx.set("cond", {5, i});
+            assert(ctx.get("out") == value_t(32, i));
         }
     }
 
     CASE(mux_enum_test) {
-        ctx.update_by_name("cond", {2, 0});
-        assert(ctx.get_by_name("out") == value_t(2, 1));
-        ctx.update_by_name("cond", {2, 1});
-        assert(ctx.get_by_name("out") == value_t(2, 2));
-        ctx.update_by_name("cond", {2, 2});
-        assert(ctx.get_by_name("out") == value_t(2, 0));
+        ctx.set("cond", {2, 0});
+        assert(ctx.get("out") == value_t(2, 1));
+        ctx.set("cond", {2, 1});
+        assert(ctx.get("out") == value_t(2, 2));
+        ctx.set("cond", {2, 2});
+        assert(ctx.get("out") == value_t(2, 0));
     }
 
     CASE(demux_5_test) {
-        ctx.update_by_name("input", {32, 114514});
+        ctx.set("input", {32, 114514});
         for (unsigned i = 0; i != 32; ++i) {
-            ctx.update_by_name("cond", {5, i});
-            assert(ctx.get_by_name(std::format("out[{}]", i)) == value_t(32, 114514));
+            ctx.set("cond", {5, i});
+            assert(ctx.get(std::format("out[{}]", i)) == value_t(32, 114514));
         }
     }
 
     CASE(decoder_5_test) {
         for (unsigned i = 0; i != 32; ++i) {
-            ctx.update_by_name("input", {5, i});
-            assert(ctx.get_by_name("output") == value_t(32, 1 << i));
+            ctx.set("input", {5, i});
+            assert(ctx.get("output") == value_t(32, 1 << i));
         }
     }
 
     CASE(encoder_5_test) {
         for (unsigned i = 0; i != 32; ++i) {
-            ctx.update_by_name("input", value_t(32, 1 << i));
-            assert(ctx.get_by_name("output") == value_t(5, i));
+            ctx.set("input", value_t(32, 1 << i));
+            assert(ctx.get("output") == value_t(5, i));
         }
     }
 
     CASE(priority_encoder_3_test) {
         for (unsigned i = 1; i != 256; ++i) {
-            ctx.update_by_name("input", {8, i});
+            ctx.set("input", {8, i});
             const auto bit = 8 - (__builtin_clz(i) - 24 + 1);
-            assert(ctx.get_by_name("output") == value_t(3, bit));
+            assert(ctx.get("output") == value_t(3, bit));
         }
     }
 
     CASE(arbiter_4_test) {
         for (unsigned i = 0; i != 16; ++i) {
-            ctx.update_by_name("request", {4, i});
+            ctx.set("request", {4, i});
             // const auto bit = i == 0 ? 0 : __builtin_ctz(i);
-            assert(ctx.get_by_name("grant") == value_t(4, i & ~(i - 1)));
+            assert(ctx.get("grant") == value_t(4, i & ~(i - 1)));
         }
     }
 }
@@ -151,12 +151,12 @@ namespace selector_test {
 
 namespace random_test {
     CASE(fib_lfsr_16_test) {
-        ctx.update_by_name("rst", high);
+        ctx.set("rst", high);
         time_advance(ctx);
         const auto values = new std::set<value_t>();
-        ctx.update_by_name("rst", low);
+        ctx.set("rst", low);
         for (int i = 0; i != 65536; ++i) {
-            values->insert(ctx.get_by_name("output"));
+            values->insert(ctx.get("output"));
             time_advance(ctx);
         }
         assert(values->size() == 65535);
@@ -164,12 +164,12 @@ namespace random_test {
     }
 
     CASE(galois_lfsr_16_test) {
-        ctx.update_by_name("rst", high);
+        ctx.set("rst", high);
         time_advance(ctx);
         const auto values = new std::set<value_t>();
-        ctx.update_by_name("rst", low);
+        ctx.set("rst", low);
         for (int i = 0; i != 65536; ++i) {
-            values->insert(ctx.get_by_name("output"));
+            values->insert(ctx.get("output"));
             time_advance(ctx);
         }
         assert(values->size() == 65535);
@@ -182,69 +182,69 @@ namespace memory_test {
         unsigned value = 0x12345678;
         std::random_device rd;
 
-        ctx.update_by_name("rst", high);
-        ctx.update_by_name("rst_value", {32, value});
+        ctx.set("rst", high);
+        ctx.set("rst_value", {32, value});
         time_advance(ctx);
-        assert (ctx.get_by_name("dout") == value_t(32, value));
-        ctx.update_by_name("rst", low);
+        assert (ctx.get("dout") == value_t(32, value));
+        ctx.set("rst", low);
         for (int i = 0; i != 128; ++i) {
             const bool isHigh = std::uniform_int_distribution(0, 1)(rd);
-            ctx.update_by_name("din", isHigh ? high : low);
+            ctx.set("din", isHigh ? high : low);
             value = value << 1 | isHigh;
             time_advance(ctx);
-            assert (ctx.get_by_name("dout") == value_t(32, value));
+            assert (ctx.get("dout") == value_t(32, value));
         }
     }
 
     CASE(reg_file_32_test) {
-        ctx.update_by_name("rst", high); time_advance(ctx);
-        ctx.update_by_name("rst", low);
-        ctx.update_by_name("wr_en", high);
+        ctx.set("rst", high); time_advance(ctx);
+        ctx.set("rst", low);
+        ctx.set("wr_en", high);
         for (unsigned i = 0; i != 32; ++i) {
-            ctx.update_by_name("wr_addr", {5, i});
-            ctx.update_by_name("din", {32, i});
+            ctx.set("wr_addr", {5, i});
+            ctx.set("din", {32, i});
             time_advance(ctx);
         }
-        ctx.update_by_name("wr_en", low); // disable write
+        ctx.set("wr_en", low); // disable write
         for (unsigned i = 0; i != 32; ++i) {
-            ctx.update_by_name("rd_addr_a", {5, i});
-            ctx.update_by_name("rd_addr_b", {5, 32 - i - 1});
-            assert (ctx.get_by_name("dout_a") == value_t(32, i));
-            assert (ctx.get_by_name("dout_b") == value_t(32, 32 - i - 1));
+            ctx.set("rd_addr_a", {5, i});
+            ctx.set("rd_addr_b", {5, 32 - i - 1});
+            assert (ctx.get("dout_a") == value_t(32, i));
+            assert (ctx.get("dout_b") == value_t(32, 32 - i - 1));
         }
     }
 
     CASE(sync_fifo_16_test) {
-        ctx.update_by_name("rst", high); time_advance(ctx);
-        ctx.update_by_name("rst", low);
-        ctx.update_by_name("wr_en", high);
-        ctx.update_by_name("rd_en", low);
+        ctx.set("rst", high); time_advance(ctx);
+        ctx.set("rst", low);
+        ctx.set("wr_en", high);
+        ctx.set("rd_en", low);
         for (unsigned i = 1; i <= 20; ++i) {
-            ctx.update_by_name("din", {32, i});
+            ctx.set("din", {32, i});
             time_advance(ctx);
             if (i >= 15) {
-                assert(ctx.get_by_name("full") == high);
+                assert(ctx.get("full") == high);
             }
         }
-        ctx.update_by_name("wr_en", low);
-        ctx.update_by_name("rd_en", high);
+        ctx.set("wr_en", low);
+        ctx.set("rd_en", high);
         for (int i = 1; i <= 20; ++i) {
             time_advance(ctx);
             if (i >= 15) {
-                assert(ctx.get_by_name("empty") == high);
+                assert(ctx.get("empty") == high);
             } else {
-                assert(ctx.get_by_name("dout") == value_t(32, i));
+                assert(ctx.get("dout") == value_t(32, i));
             }
         }
 
-        ctx.update_by_name("rst", high); time_advance(ctx);
-        ctx.update_by_name("rst", low);
-        ctx.update_by_name("wr_en", high);
-        ctx.update_by_name("rd_en", high);
+        ctx.set("rst", high); time_advance(ctx);
+        ctx.set("rst", low);
+        ctx.set("wr_en", high);
+        ctx.set("rd_en", high);
         for (unsigned i = 1; i <= 30; ++i) {
-            ctx.update_by_name("din", {32, i});
+            ctx.set("din", {32, i});
             time_advance(ctx);
-            assert(ctx.get_by_name("dout") == value_t(32, i - 1));
+            assert(ctx.get("dout") == value_t(32, i - 1));
         }
     }
 }
@@ -260,10 +260,10 @@ namespace arith_test {
             unsigned shamt = std::uniform_int_distribution<unsigned>(0, 32)(rd);
             unsigned input = std::uniform_int_distribution<unsigned>(0, 0xFFFFFFFF)(rd);
 
-            ctx.update_by_name("din", {32, input});
-            ctx.update_by_name("shamt", {5, shamt});
-            ctx.update_by_name("dir", {1, dir});
-            ctx.update_by_name("arith", {1, arith});
+            ctx.set("din", {32, input});
+            ctx.set("shamt", {5, shamt});
+            ctx.set("dir", {1, dir});
+            ctx.set("arith", {1, arith});
             
             unsigned expected;
             if (dir) {
@@ -275,19 +275,19 @@ namespace arith_test {
             } else {
                 expected = (input << shamt);
             }
-            assert (ctx.get_by_name("dout") == value_t(32, expected));
+            assert (ctx.get("dout") == value_t(32, expected));
         }
     }
 
     CASE(sqrt32_test) {
         for (unsigned i = 0; i != 65536; ++i) {
-            ctx.update_by_name("D", {32, i * i});
-            ctx.update_by_name("rst", high); time_advance(ctx);
-            ctx.update_by_name("rst", low);
+            ctx.set("D", {32, i * i});
+            ctx.set("rst", high); time_advance(ctx);
+            ctx.set("rst", low);
             for (int j = 0; j != 16; ++j) {
                 time_advance(ctx);
             }
-            assert (ctx.get_by_name("Q") == value_t(16, i));
+            assert (ctx.get("Q") == value_t(16, i));
         }
     }
 
@@ -297,11 +297,11 @@ namespace arith_test {
             uint64_t a = std::uniform_int_distribution<uint64_t>(0, 0xFFFFFFFF)(rd);
             uint64_t b = std::uniform_int_distribution<uint64_t>(0, 0xFFFFFFFF)(rd);
 
-            ctx.update_by_name("A", {32, a});
-            ctx.update_by_name("B", {32, b});
-            ctx.update_by_name("cin", low);
-            assert (ctx.get_by_name("S") == value_t(32, a + b));
-            assert (ctx.get_by_name("cout") == value_t(1, (a + b) >> 32));
+            ctx.set("A", {32, a});
+            ctx.set("B", {32, b});
+            ctx.set("cin", low);
+            assert (ctx.get("S") == value_t(32, a + b));
+            assert (ctx.get("cout") == value_t(1, (a + b) >> 32));
         }
     }
 
@@ -311,11 +311,11 @@ namespace arith_test {
             uint64_t a = std::uniform_int_distribution<uint64_t>(0, 0xFFFFFFFF)(rd);
             uint64_t b = std::uniform_int_distribution<uint64_t>(0, 0xFFFFFFFF)(rd);
 
-            ctx.update_by_name("A", {32, a});
-            ctx.update_by_name("B", {32, b});
-            ctx.update_by_name("cin", low);
-            assert (ctx.get_by_name("S") == value_t(32, a + b));
-            assert (ctx.get_by_name("cout") == value_t(1, (a + b) >> 32));
+            ctx.set("A", {32, a});
+            ctx.set("B", {32, b});
+            ctx.set("cin", low);
+            assert (ctx.get("S") == value_t(32, a + b));
+            assert (ctx.get("cout") == value_t(1, (a + b) >> 32));
         }
     }
 }
