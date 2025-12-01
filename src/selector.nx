@@ -20,7 +20,7 @@ library selector;
   * @port input      Array of input signals to select from
   * @port output     Selected output signal
   */
-component MUX(width) : [sel] :: [case[i] | i in [0..W]] -> [output] {
+component MUX(width) : [sel] ++ [case[i] | i in [0..W]] -> [output] {
   let W = 2**width;
   wire sel  of bit(width);
   wire mask of bit(W);
@@ -124,7 +124,7 @@ component PRIORITY_ENCODER(width) : [input] -> [output] {
     if i == W - 1 then
       mask[i] <> input[i];
     else
-      mask[i] <> AND(W - i) <> input[i] :: [NOT <> input[j] | j in [i + 1..W]];
+      mask[i] <> AND(W - i) <> input[i] ++ [NOT <> input[j] | j in [i + 1..W]];
   }
   output <> ENCODER(width) <> mask;
 } 

@@ -79,8 +79,8 @@ component REG_FILE(width, capacity, pos_edge, high_rst)
       ]
     ];
   }
-  dout_a <> MUX(capacity) <> [rd_addr_a] :: [data[i] | i in [0..W]];
-  dout_b <> MUX(capacity) <> [rd_addr_b] :: [data[i] | i in [0..W]];
+  dout_a <> MUX(capacity) <> [rd_addr_a] ++ [data[i] | i in [0..W]];
+  dout_b <> MUX(capacity) <> [rd_addr_b] ++ [data[i] | i in [0..W]];
 }
 
 /**
@@ -129,7 +129,7 @@ component SYNC_FIFO(width, capacity, pos_edge, high_rst)
     next_reg(fifo[i], AND <> [w_mask[i], real_wr_en], din);
   }
   
-  next_reg(dout, real_rd_en, MUX(capacity) <> [rptr] :: [fifo[i] | i in [0..W]]);
+  next_reg(dout, real_rd_en, MUX(capacity) <> [rptr] ++ [fifo[i] | i in [0..W]]);
 
   full  <> EQ <> [add_one(wptr), rptr];
   empty <> EQ <> [wptr, rptr];

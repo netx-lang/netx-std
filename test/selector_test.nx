@@ -19,14 +19,14 @@ component mux_enum_test : [cond] -> [out] {
     case[RED]    : GREEN,
     case[GREEN]  : YELLOW,
     case[YELLOW] : RED,
-    $default     : 2'b11
+    default      : 2'b11
   };
 }
 
 component mux_5_test : [cond] -> [out] {
   wire cond      of bit(5);
   wire out       of bit(32);
-  out <> MUX(5) <> [cond] :: [ i | i in [0..32] ];
+  out <> MUX(5) <> [cond] ++ [ i | i in [0..32] ];
 }
 
 component demux_5_test : [cond, input] -> [out] {

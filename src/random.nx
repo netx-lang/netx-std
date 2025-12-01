@@ -64,7 +64,7 @@ component GALOIS_LFSR(width, pos_edge, high_rst, seed, taps) : [clk, rst] -> [ou
 
   let lfsr(i) = output[i] <> reg(i) <> (
     if i == 0         then feedback 
-    else if $contains(taps, i) then XOR <> [feedback, lfsr(i - 1)]
+    else if contains(taps, i) then XOR <> [feedback, lfsr(i - 1)]
     else lfsr(i - 1)
   );
   lfsr(width - 1);
