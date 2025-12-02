@@ -73,8 +73,8 @@ component BARREL_SHIFTER(stage) : [din, shamt, dir, arith] -> [dout] {
   auto sign_bit <> MUX(1) <> [arith, 1'b0, din[width - 1]];
 
   wire result[stage]  of bit(width);
-  for (i in [0..stage]) {
-      for (j in [0..width]) {
+  for i in [0..stage] {
+      for j in [0..width] {
           let offset = 2 ** i;
 
           let last = (if i == 0 then din else result[i - 1]);
@@ -170,7 +170,7 @@ component CARRY_LOOKAHEAD_ADDER(width) : [a, b, cin] -> [sum, cout] {
         if i == 0 then cin
         else OR <> [G(i-1), AND <> [P(i-1), C(i-1)]];
 
-    for (i in [0..32]) {
+    for i in [0..32] {
         sum[i] <> XOR <> [a[i], b[i], C(i)];
     }
     cout <> C(32);

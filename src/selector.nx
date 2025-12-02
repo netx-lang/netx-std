@@ -51,7 +51,7 @@ component DEMUX(width) : [sel, input] -> [output[i] | i in [0..W]] {
   auto input, output[W];
 
   mask <> DECODER(width) <> sel;
-  for (i in [0..W]) {
+  for i in [0..W] {
     output[i] <> AND <> [input, CAST <> mask[i]];
   }
 }
@@ -72,7 +72,7 @@ component DECODER(width) : [input] -> [output] {
   wire input  of bit(width);
   wire output of bit(W);
   
-  for (i in [0..W]) {
+  for i in [0..W] {
     output[i] <> AND(width) <> [port |
       j in [0..width],
       let port = if (i >> j) & 1 then TO else NOT
@@ -96,7 +96,7 @@ component ENCODER(width) : [input] -> [output] {
   wire input  of bit(W);
   wire output of bit(width);
   
-  for (i in [0..width]) {
+  for i in [0..width] {
     output[i] <> OR(2**(width-1)) <> [
       input[j] | j in [0..W], when (j >> i) & 1
     ];
@@ -120,7 +120,7 @@ component PRIORITY_ENCODER(width) : [input] -> [output] {
   wire output of bit(width);
 
   wire mask of bit(W);
-  for (i in [0..W]) {
+  for i in [0..W] {
     if i == W - 1 then
       mask[i] <> input[i];
     else
@@ -149,7 +149,7 @@ component ARBITER(width) : [request] -> [grant] {
     else OR <> [request[i], pre_req(i - 1)];
 
   grant[0] <> request[0];
-  for (i in [1..width]) {
+  for i in [1..width] {
       grant[i] <> AND <> [request[i], NOT <> pre_req(i - 1)];
   }
 }

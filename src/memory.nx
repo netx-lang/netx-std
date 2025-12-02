@@ -72,7 +72,7 @@ component REG_FILE(width, capacity, pos_edge, high_rst)
 
   wire wr_mask of bit(W);
   wr_mask <> DECODER(capacity) <> wr_addr;
-  for (i in [0..W]) {
+  for i in [0..W] {
     data[i] <> REG(pos_edge, high_rst, 0) <> [clk, rst,
       MUX(1) <> [
         AND <> [wr_mask[i], wr_en], data[i], din
@@ -125,7 +125,7 @@ component SYNC_FIFO(width, capacity, pos_edge, high_rst)
 
   wire w_mask of bit(W);
   w_mask <> DECODER(capacity) <> wptr;
-  for (i in [0..W]) {
+  for i in [0..W] {
     next_reg(fifo[i], AND <> [w_mask[i], real_wr_en], din);
   }
   
