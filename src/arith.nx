@@ -51,9 +51,9 @@ component SQRT32(pos_edge, high_rst) : [clk, rst, D] -> [Q] {
 }
 
 /**
-  * 32-bit Barrel Shifter
+  * Barrel Shifter
   *
-  * This component performs barrel shifting on a 32-bit input value.
+  * This component performs barrel shifting on a data input.
   *
   * @attr stage     Number of stages (log2(width))
   *
